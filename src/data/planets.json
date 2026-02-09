@@ -1,3 +1,75 @@
-[
-  "Gas Giant", "Ice Giant", "Terrestrial", "Desert", "Oceanic", "Lava World", "Barren", "Asteroid Belt"
-]
+{
+  "Terrestrial": {
+    "type": {
+      "name": "Terrestrial",
+      "description": "A rocky world with liquid water and a breathable atmosphere, capable of supporting diverse life forms."
+    },
+      "color": { "base": "#10B981", "secondary": "#3B82F6", "atmosphere": "#60A5FA"},
+      "data": {
+        "habitable": "true",
+        "habitabilityRate": 1.0
+      }
+  },
+  "Oceanic": {
+    "type": {
+      "name": "Oceanic",
+      "description": "A planet almost entirely covered by deep oceans, with few or no landmasses."
+    },
+    "color": { "base": "#1E40AF", "secondary": "#2563EB", "atmosphere": "#93C5FD" }
+  },
+  "Barren": {
+    "type": {
+      "name": "Barren",
+      "description": "A desolate rocky world with a thin atmosphere or none at all, scarred by craters."
+    },
+    "color": { "base": "#52525B", "secondary": "#71717A", "atmosphere": "transparent" },
+    "data": {
+      "habitable": "true",
+      "habitabilityRate": 0.3
+    }
+  },
+  "Desert": {
+    "type": {
+      "name": "Desert",
+      "description": "A dry, arid world with minimal water, dominated by vast sand dunes and rocky plateaus."
+    },
+    "color": { "base": "#BA9456", "secondary": "#B0AE84", "atmosphere": "#FDE68A" },
+    "data": {
+      "habitable": "true",
+      "habitabilityRate": 0.4
+    }
+  },
+  "Arctic": {
+    "type": {
+      "name": "Arctic",
+      "description": "A frozen world locked in a permanent ice age, with surface temperatures well below freezing."
+    },
+    "color": { "base": "#CFFAFE", "secondary": "#A5F3FC", "atmosphere": "#E0F2FE" },
+    "data": {
+      "habitable": "true",
+      "habitabilityRate": 0.4
+    }
+  },
+  "Volcanic": {
+    "type": {
+      "name": "Volcanic",
+      "description": "A geologically active world with constant volcanic eruptions and lava flows."
+    },
+    "color": { "base": "#7F1D1D", "secondary": "#B91C1C", "atmosphere": "#FCA5A5" },
+    "data": {
+      "habitable": "true",
+      "habitabilityRate": 0.1
+    }
+  },
+  "Gas Giant": {
+    "type": {
+      "name": "Gas Giant",
+      "description": "A massive planet composed mostly of hydrogen and helium, with no solid surface."
+    },
+    "color": { "base": "#B45309", "secondary": "#D97706", "atmosphere": "#FEF3C7" },
+    "data": {
+      "habitable": "false",
+      "habitabilityRate": 0.0
+    }
+  }
+}

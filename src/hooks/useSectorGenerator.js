@@ -1,11 +1,24 @@
 import { useState, useCallback } from 'react';
 import generatorConfig from '../data/generator_config.json';
 import namesData from '../data/names.json';
+import systemGenerationConfig from '../data/system_generation_config.json';
 import { createRNG, stringToSeed } from '../utils/rng';
 import { createWeightedStarPicker } from '../utils/starData';
 
 const { DENSITY_PRESETS, GENERATION_WEIGHTS } = generatorConfig;
 const { GREEK_ALPHABET, ROMAN_NUMERALS, SYSTEM_NAME_SUFFIXES, NAME_PREFIXES, NAME_SUFFIXES, STAR_NAME_SUFFIXES } = namesData;
+const { MAX_PLANETS } = systemGenerationConfig;
+
+// Build a bell-like count distribution centered around 3 planets.
+const createPlanetCountWeights = (maxPlanets, center = 3) => {
+  const sigma = 1.6;
+  return Array.from({ length: maxPlanets + 1 }, (_, count) => {
+    const exponent = -((count - center) ** 2) / (2 * sigma * sigma);
+    return Math.exp(exponent) + 0.02;
+  });
+};
+
+const PLANET_COUNT_WEIGHTS = createPlanetCountWeights(MAX_PLANETS);
 
 // Helper to calculate target count based on density settings
 const calculateTargetCount = (mode, preset, manual, limits, totalHexes, rng) => {
@@ -22,21 +35,53 @@ const calculateTargetCount = (mode, preset, manual, limits, totalHexes, rng) => 
   return 0;
 };
 
-const PLANET_TYPES = ['Barren', 'Desert', 'Oceanic', 'Terran', 'Jungle', 'Ice', 'Lava', 'Gas Giant', 'Ice Giant'];
-
-const generateSystemSkeleton = (q, r, rng) => {
+const generateSystemSkeleton = (star, rng, maxPlanets) => {
   const system = {
-    star: {},
+    star: {
+      type: star.type,
+      colors: star.color,
+      desc: star.class?.name
+    },
     bodies: [],
     station: null
   };
 
-  const planetCount = Math.floor(rng() * 7);
-  for (let i = 0; i < planetCount; i++) {
-    system.bodies.push({
-      name: '',
-      type: PLANET_TYPES[Math.floor(rng() * PLANET_TYPES.length)]
-    });
+  const weights = star.data?.planetTypeWeights;
+  if (weights) {
+    const planetTypes = Object.keys(weights);
+    const totalWeight = planetTypes.reduce((sum, type) => sum + weights[type], 0);
+
+    if (totalWeight > 0) {
+      let planetCount = 0;
+      const maxPlanetCount = Math.max(0, Math.min(maxPlanets, PLANET_COUNT_WEIGHTS.length - 1));
+      const countWeights = PLANET_COUNT_WEIGHTS.slice(0, maxPlanetCount + 1);
+      const totalCountWeight = countWeights.reduce((sum, w) => sum + w, 0);
+      let countRoll = rng() * totalCountWeight;
+
+      for (let i = 0; i < countWeights.length; i++) {
+        countRoll -= countWeights[i];
+        if (countRoll < 0) {
+          planetCount = i;
+          break;
+        }
+      }
+
+      for (let i = 0; i < planetCount; i++) {
+        let weight = rng() * totalWeight;
+        let selectedType = planetTypes[0];
+        for (const type of planetTypes) {
+          weight -= weights[type];
+          if (weight < 0) {
+            selectedType = type;
+            break;
+          }
+        }
+        system.bodies.push({
+          name: '',
+          type: selectedType
+        });
+      }
+    }
   }
 
   if (rng() < 0.15) system.station = "Orbital Station";
@@ -85,19 +130,8 @@ export function useSectorGenerator(onGenerate) {
     const pickStar = createWeightedStarPicker();
     const newSystems = {};
     coords.slice(0, targetCount).forEach(({ q, r }) => {
-      const system = generateSystemSkeleton(q, r, rng);
-
       const selectedStar = pickStar(rng);
-      
-      // Apply the correct data from the new JSON structure
-      system.star.type = selectedStar.type;
-      system.star.colors = selectedStar.color;
-      system.star.desc = selectedStar.class?.name;
-
-      // Black Holes and Neutron Stars should not have planets
-      if (system.star.type === 'Black Hole' || system.star.type === 'Neutron') {
-        system.bodies = [];
-      }
+      const system = generateSystemSkeleton(selectedStar, rng, MAX_PLANETS);
 
       // Generate Age based on star type range
       const ageRange = selectedStar.class?.ageRange;
@@ -134,14 +168,15 @@ export function useSectorGenerator(onGenerate) {
 
       const nameSuffix = NAME_SUFFIXES[Math.floor(rng() * NAME_SUFFIXES.length)];
       system.namePrefix = prefix;
-      system.name = prefix + nameSuffix;
+      system.baseName = prefix + nameSuffix;
+      system.name = system.baseName;
 
       const starSuffix = STAR_NAME_SUFFIXES[Math.floor(rng() * STAR_NAME_SUFFIXES.length)];
-      system.star = { ...system.star, name: `${system.name} ${starSuffix}` };
+      system.star = { ...system.star, name: `${system.baseName} ${starSuffix}` };
 
       if (rng() < GENERATION_WEIGHTS.systemSuffix) {
         const suffix = SYSTEM_NAME_SUFFIXES[Math.floor(rng() * SYSTEM_NAME_SUFFIXES.length)];
-        system.name = `${system.name} ${suffix}`;
+        system.name = `${system.baseName} ${suffix}`;
       }
 
       if (system.bodies && system.bodies.length > 0) {
