@@ -11,6 +11,8 @@ const clampInt = (value, min, max, fallback) => {
   return Math.min(max, Math.max(min, parsed));
 };
 
+let hasGeneratedOnMount = false;
+
 function GeneratorPanel({ onGenerate, style }) {
   const {
     pendingGridSize, setPendingGridSize,
@@ -28,6 +30,8 @@ function GeneratorPanel({ onGenerate, style }) {
 
   // Initial generation on mount
   useEffect(() => {
+    if (hasGeneratedOnMount) return;
+    hasGeneratedOnMount = true;
     generate();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

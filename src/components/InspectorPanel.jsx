@@ -3,19 +3,14 @@ import { createPortal } from 'react-dom';
 import { Map as MapIcon, Star, Info, X, Disc, Activity, Circle, Hexagon, ChevronDown, ChevronRight } from 'lucide-react';
 import StarIcon from './StarIcon';
 import { getHexId } from '../utils/helpers';
-import starData from '../data/stars.json';
+import { getStarByType } from '../utils/starData';
 
 function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
   const [expanded, setExpanded] = useState({ stars: true, planets: true });
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0 });
 
-  const starInfo = selectedSystem
-    ? starData.find(s => s.type === selectedSystem.star.type)
-    : null;
-
-  // Fallback to G-type if star type is missing or invalid (handles legacy data)
-  const displayStarInfo = starInfo || starData.find(s => s.type === 'G');
+  const displayStarInfo = getStarByType(selectedSystem?.star?.type);
   const iconSize = displayStarInfo?.data?.size?.iconSize || 48;
   const inspectorStarSize = displayStarInfo?.data?.size?.inspector || 16;
 
