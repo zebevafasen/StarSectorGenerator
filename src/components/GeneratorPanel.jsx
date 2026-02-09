@@ -5,7 +5,13 @@ import { useSectorGenerator } from '../hooks/useSectorGenerator';
 
 const { SECTOR_TEMPLATES, DENSITY_PRESETS } = generatorConfig;
 
-function GeneratorPanel({ onGenerate, style }) {
+const clampInt = (value, min, max, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isNaN(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+};
+
+function GeneratorPanel({ onGenerate, style, autoGenerateOnMount }) {
   const {
     pendingGridSize, setPendingGridSize,
     densityMode, setDensityMode,
@@ -20,10 +26,11 @@ function GeneratorPanel({ onGenerate, style }) {
   const widthInputRef = useRef(null);
   const isAprilFools = new Date().getMonth() === 3 && new Date().getDate() === 1;
 
-  // Initial generation on mount
+  // Initial generation is controlled by the app to stay deterministic in StrictMode.
   useEffect(() => {
+    if (!autoGenerateOnMount) return;
     generate();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [autoGenerateOnMount, generate]);
 
   return (
     <aside 
@@ -77,10 +84,10 @@ function GeneratorPanel({ onGenerate, style }) {
                 type="number"
                 min="2" max="50"
                 value={pendingGridSize.width}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPendingGridSize({ ...pendingGridSize, width: val === '' ? '' : parseInt(val) });
-                }}
+                onChange={(e) => setPendingGridSize(prev => ({
+                  ...prev,
+                  width: clampInt(e.target.value, 2, 50, prev.width)
+                }))}
                 onFocus={(e) => e.target.select()}
                 className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm focus:border-blue-500 outline-none"
               />
@@ -91,10 +98,10 @@ function GeneratorPanel({ onGenerate, style }) {
                 type="number"
                 min="2" max="50"
                 value={pendingGridSize.height}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPendingGridSize({ ...pendingGridSize, height: val === '' ? '' : parseInt(val) });
-                }}
+                onChange={(e) => setPendingGridSize(prev => ({
+                  ...prev,
+                  height: clampInt(e.target.value, 2, 50, prev.height)
+                }))}
                 onFocus={(e) => e.target.select()}
                 className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm focus:border-blue-500 outline-none"
               />
@@ -159,7 +166,10 @@ function GeneratorPanel({ onGenerate, style }) {
                 <input
                   type="number" min="0"
                   value={rangeLimits.min}
-                  onChange={(e) => setRangeLimits({ ...rangeLimits, min: parseInt(e.target.value) })}
+                  onChange={(e) => setRangeLimits(prev => ({
+                    ...prev,
+                    min: clampInt(e.target.value, 0, pendingGridSize.width * pendingGridSize.height, prev.min)
+                  }))}
                   className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm focus:border-blue-500 outline-none"
                 />
               </div>
@@ -168,7 +178,10 @@ function GeneratorPanel({ onGenerate, style }) {
                 <input
                   type="number" min="0"
                   value={rangeLimits.max}
-                  onChange={(e) => setRangeLimits({ ...rangeLimits, max: parseInt(e.target.value) })}
+                  onChange={(e) => setRangeLimits(prev => ({
+                    ...prev,
+                    max: clampInt(e.target.value, 0, pendingGridSize.width * pendingGridSize.height, prev.max)
+                  }))}
                   className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm focus:border-blue-500 outline-none"
                 />
               </div>

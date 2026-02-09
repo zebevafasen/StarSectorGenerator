@@ -18,6 +18,10 @@ export default function App() {
   const [showLeftSidebar, setShowLeftSidebar] = useState(true);
   const [showRightSidebar, setShowRightSidebar] = useState(true);
   const [viewState, setViewState] = useState({ scale: 1, x: 0, y: 0 });
+  const [autoGenerateOnMount, setAutoGenerateOnMount] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.sessionStorage.getItem('ssg_auto_generated') !== '1';
+  });
 
   const resetView = useCallback((size = gridSize) => {
     // Center logic roughly approximates centering the grid
@@ -41,33 +45,22 @@ export default function App() {
     setGridSize(newGridSize);
     setSelectedCoords(null);
     resetView(newGridSize);
-  }, [resetView]);
+    if (autoGenerateOnMount && typeof window !== 'undefined') {
+      window.sessionStorage.setItem('ssg_auto_generated', '1');
+      setAutoGenerateOnMount(false);
+    }
+  }, [autoGenerateOnMount, resetView]);
 
   const generatorStyle = useMemo(() => ({ display: showLeftSidebar ? 'flex' : 'none' }), [showLeftSidebar]);
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #334155;
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #475569;
-        }
-      `}</style>
-        
+
         {/* LEFT COLUMN: Generator Settings */}
         <GeneratorPanel
           onGenerate={handleSectorGenerated}
           style={generatorStyle}
+          autoGenerateOnMount={autoGenerateOnMount}
         />
 
         {/* CENTER COLUMN: Map View */}

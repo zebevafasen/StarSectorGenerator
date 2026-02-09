@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import generatorConfig from '../data/generator_config.json';
 import namesData from '../data/names.json';
-import starData from '../data/stars.json';
 import { createRNG, stringToSeed } from '../utils/rng';
+import { createWeightedStarPicker } from '../utils/starData';
 
 const { DENSITY_PRESETS, GENERATION_WEIGHTS } = generatorConfig;
 const { GREEK_ALPHABET, ROMAN_NUMERALS, SYSTEM_NAME_SUFFIXES, NAME_PREFIXES, NAME_SUFFIXES, STAR_NAME_SUFFIXES } = namesData;
@@ -82,23 +82,12 @@ export function useSectorGenerator(onGenerate) {
       [coords[i], coords[j]] = [coords[j], coords[i]];
     }
 
+    const pickStar = createWeightedStarPicker();
     const newSystems = {};
     coords.slice(0, targetCount).forEach(({ q, r }) => {
       const system = generateSystemSkeleton(q, r, rng);
 
-      // Fix/Regenerate Star Data using new stars.json structure
-      // We perform a weighted random selection based on frequency
-      const totalFreq = starData.reduce((sum, s) => sum + (s.data?.freq || 0), 0);
-      let roll = rng() * totalFreq;
-      let selectedStar = starData[starData.length - 1];
-      for (const s of starData) {
-        const freq = s.data?.freq || 0;
-        roll -= freq;
-        if (roll <= 0) {
-          selectedStar = s;
-          break;
-        }
-      }
+      const selectedStar = pickStar(rng);
       
       // Apply the correct data from the new JSON structure
       system.star.type = selectedStar.type;
