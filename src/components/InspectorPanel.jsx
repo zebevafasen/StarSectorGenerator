@@ -5,6 +5,7 @@ import PlanetIcon from './PlanetIcon';
 import SystemStarIcon from './SystemStarIcon';
 import { getHexId } from '../utils/helpers';
 import { getStarVisual } from '../utils/starVisuals';
+import { getMainColor } from '../utils/colorSemantics';
 import { getPlanetByType } from '../utils/planetUtils';
 
 function SectionToggleButton({ icon, label, isExpanded, onToggle }) {
@@ -83,7 +84,7 @@ function PlanetsSection({ expanded, onToggle, selectedSystem, setTooltip }) {
             <div className="space-y-2">
               {selectedSystem.bodies.map((body, i) => {
                 const planetData = getPlanetByType(body.type);
-                const typeColor = planetData?.color?.base;
+                const typeColor = getMainColor(planetData?.color);
 
                 return (
                   <div key={i} className="bg-slate-800/50 p-2 rounded border border-slate-700/50 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
@@ -172,6 +173,7 @@ function Tooltip({ tooltip }) {
   const { content } = tooltip;
   const info = content.class || content.type || {};
   const color = content.color || {};
+  const accentColor = getMainColor(color);
 
   return createPortal(
     <div
@@ -179,10 +181,10 @@ function Tooltip({ tooltip }) {
       style={{
         top: Math.min(tooltip.y + 16, window.innerHeight - 220),
         left: Math.min(tooltip.x + 16, window.innerWidth - 280),
-        borderColor: color.base || '#334155'
+        borderColor: accentColor
       }}
     >
-      <div className="font-bold text-blue-300 mb-1 text-sm" style={{ color: color.base }}>
+      <div className="font-bold text-blue-300 mb-1 text-sm" style={{ color: accentColor }}>
         {info.name}
       </div>
       <div className="text-xs text-slate-300 space-y-1">
