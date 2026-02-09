@@ -11,9 +11,7 @@ const clampInt = (value, min, max, fallback) => {
   return Math.min(max, Math.max(min, parsed));
 };
 
-let hasGeneratedOnMount = false;
-
-function GeneratorPanel({ onGenerate, style }) {
+function GeneratorPanel({ onGenerate, style, autoGenerateOnMount }) {
   const {
     pendingGridSize, setPendingGridSize,
     densityMode, setDensityMode,
@@ -28,12 +26,11 @@ function GeneratorPanel({ onGenerate, style }) {
   const widthInputRef = useRef(null);
   const isAprilFools = new Date().getMonth() === 3 && new Date().getDate() === 1;
 
-  // Initial generation on mount
+  // Initial generation is controlled by the app to stay deterministic in StrictMode.
   useEffect(() => {
-    if (hasGeneratedOnMount) return;
-    hasGeneratedOnMount = true;
+    if (!autoGenerateOnMount) return;
     generate();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [autoGenerateOnMount, generate]);
 
   return (
     <aside 
