@@ -47,9 +47,47 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
         {getHexId(q, r)}
       </text>
 
-      {hasSystem && (
-        <SystemStarIcon starType={systemData?.star?.type} uid={`${q}-${r}`} />
-      )}
+      {hasSystem && (() => {
+        const stars = systemData?.stars || (systemData?.star ? [systemData.star] : []);
+        
+        if (stars.length <= 1) {
+          return <SystemStarIcon starType={stars[0]?.type} uid={`${q}-${r}`} />;
+        }
+
+        return stars.map((star, index) => {
+          let xOffset = 0;
+          let yOffset = 0;
+          let scale = 1;
+
+          if (stars.length === 2) {
+            scale = 0.6;
+            const offset = HEX_SIZE * 0.25;
+            xOffset = index === 0 ? -offset : offset;
+            yOffset = index === 0 ? -offset : offset;
+          } else {
+            scale = 0.5;
+            const offset = HEX_SIZE * 0.3;
+            if (index === 0) {
+              yOffset = -offset;
+            } else if (index === 1) {
+              xOffset = offset;
+              yOffset = offset * 0.6;
+            } else {
+              xOffset = -offset;
+              yOffset = offset * 0.6;
+            }
+          }
+
+          return (
+            <g key={index} transform={`translate(${xOffset},${yOffset}) scale(${scale})`}>
+              <SystemStarIcon 
+                starType={star.type} 
+                uid={`${q}-${r}-${index}`} 
+              />
+            </g>
+          );
+        });
+      })()}
     </g>
   );
 };

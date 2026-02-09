@@ -3,8 +3,25 @@ import { HEX_SIZE, HEX_HEIGHT, SIDEBAR_WIDTH } from './constants';
 import GeneratorPanel from './components/GeneratorPanel';
 import InspectorPanel from './components/InspectorPanel';
 import StarMap from './components/StarMap';
+import namesData from './data/names.json';
 
 // --- Constants & Data Models ---
+
+const ADDITIONAL_STAR_TYPES = ['O', 'B', 'A', 'F', 'G', 'K', 'M', 'Neutron', 'Black Hole'];
+const MULTI_STAR_SUFFIXES = [
+  namesData?.GREEK_LETTERS?.[1] || 'B',
+  namesData?.GREEK_LETTERS?.[2] || 'G'
+];
+
+const hashToUnit = (text) => {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0) / 4294967296;
+};
 
 export default function App() {
   // Settings State
@@ -41,7 +58,52 @@ export default function App() {
   // --- Generation Logic ---
 
   const handleSectorGenerated = useCallback((newSystems, newGridSize) => {
-    setSystems(newSystems);
+    // Post-process systems to add deterministic multi-star variants.
+    const processedSystems = Object.fromEntries(
+      Object.entries(newSystems).map(([coords, system]) => {
+        const stars = system.stars ? [...system.stars] : (system.star ? [system.star] : []);
+        const seedBase = `${coords}|${system.baseName || system.name || system.star?.name || 'system'}`;
+
+        // ~15% chance for a binary system
+        if (stars.length > 0 && hashToUnit(`${seedBase}:binary`) < 0.15) {
+          const type2 = ADDITIONAL_STAR_TYPES[
+            Math.floor(hashToUnit(`${seedBase}:type2`) * ADDITIONAL_STAR_TYPES.length)
+          ];
+          const age2 = +(1 + hashToUnit(`${seedBase}:age2`) * 9).toFixed(2);
+
+          stars.push({
+            ...system.star,
+            name: `${system.star.name} ${MULTI_STAR_SUFFIXES[0]}`,
+            type: type2,
+            age: age2,
+            ageUnit: system.star?.ageUnit || 'B Years'
+          });
+
+          // ~1.5% chance for a trinary system (10% of binary systems)
+          if (hashToUnit(`${seedBase}:trinary`) < 0.10) {
+            const type3 = ADDITIONAL_STAR_TYPES[
+              Math.floor(hashToUnit(`${seedBase}:type3`) * ADDITIONAL_STAR_TYPES.length)
+            ];
+            const age3 = +(1 + hashToUnit(`${seedBase}:age3`) * 9).toFixed(2);
+
+            stars.push({
+              ...system.star,
+              name: `${system.star.name} ${MULTI_STAR_SUFFIXES[1]}`,
+              type: type3,
+              age: age3,
+              ageUnit: system.star?.ageUnit || 'B Years'
+            });
+          }
+        }
+
+        return [coords, {
+          ...system,
+          stars
+        }];
+      })
+    );
+
+    setSystems(processedSystems);
     setGridSize(newGridSize);
     setSelectedCoords(null);
     resetView(newGridSize);
