@@ -23,6 +23,8 @@ function SectionToggleButton({ icon, label, isExpanded, onToggle }) {
 }
 
 function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
+  const starAccentColor = getMainColor(displayStarInfo?.color);
+
   return (
     <div>
       <SectionToggleButton
@@ -45,7 +47,8 @@ function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, onTo
               <div className="text-base font-bold text-blue-300">{selectedSystem.star.name}</div>
               <div className="flex items-center gap-2">
                 <span
-                  className="text-[10px] text-slate-400 font-bold uppercase cursor-help border-b border-dotted border-slate-600 hover:text-blue-400 hover:border-blue-400 transition-colors"
+                  className="text-[10px] font-bold uppercase cursor-help border-b border-dotted transition-colors"
+                  style={{ color: starAccentColor, borderColor: starAccentColor }}
                   onMouseEnter={(e) => onTooltipEnter(e, displayStarInfo)}
                   onMouseMove={onTooltipMove}
                   onMouseLeave={onTooltipLeave}
