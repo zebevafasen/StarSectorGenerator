@@ -37,7 +37,6 @@ export function usePanZoom(viewState, setViewState) {
     onMouseDown,
     onMouseMove,
     onMouseUp,
-    onMouseLeave: onMouseUp,
-    isDragging
+    onMouseLeave: onMouseUp
   };
 }

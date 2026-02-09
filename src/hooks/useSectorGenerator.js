@@ -38,9 +38,7 @@ const calculateTargetCount = (mode, preset, manual, limits, totalHexes, rng) => 
 const generateSystemSkeleton = (star, rng, maxPlanets) => {
   const system = {
     star: {
-      type: star.type,
-      colors: star.color,
-      desc: star.class?.name
+      type: star.type
     },
     bodies: [],
     station: null
@@ -230,7 +228,6 @@ export function useSectorGenerator(onGenerate) {
     rangeLimits, setRangeLimits,
     seed, setSeed,
     autoGenerateSeed, setAutoGenerateSeed,
-    generate,
-    generateSector
+    generate
   };
 }

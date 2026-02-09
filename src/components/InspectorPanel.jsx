@@ -1,10 +1,10 @@
 import React, { memo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Map as MapIcon, Star, Info, X, Disc, Activity, Circle, Hexagon, ChevronDown, ChevronRight } from 'lucide-react';
-import StarIcon from './StarIcon';
 import PlanetIcon from './PlanetIcon';
+import SystemStarIcon from './SystemStarIcon';
 import { getHexId } from '../utils/helpers';
-import { getStarByType } from '../utils/starData';
+import { getStarVisual } from '../utils/starVisuals';
 import { getPlanetByType } from '../utils/planetUtils';
 
 function SectionToggleButton({ icon, label, isExpanded, onToggle }) {
@@ -21,7 +21,7 @@ function SectionToggleButton({ icon, label, isExpanded, onToggle }) {
   );
 }
 
-function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, iconSize, inspectorStarSize, setTooltip }) {
+function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, setTooltip }) {
   return (
     <div>
       <SectionToggleButton
@@ -34,18 +34,12 @@ function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, icon
       {expanded && (
         <div className="px-1 pb-1 border-x border-b border-slate-800 rounded-b-lg bg-slate-900/30 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="bg-slate-800/50 p-0.5 rounded border border-slate-700/50 flex items-center gap-3 group hover:border-blue-500/30 transition-colors">
-            <div className="flex items-center justify-center shrink-0" style={{ width: iconSize, height: iconSize, padding: '4px' }}>
-              <svg width={iconSize} height={iconSize} viewBox="0 0 50 50">
-                <StarIcon
-                  colors={displayStarInfo?.color}
-                  radius={inspectorStarSize}
-                  outerRadius={inspectorStarSize * 1.2}
-                  x={25}
-                  y={25}
-                  uid="inspector"
-                />
-              </svg>
-            </div>
+            <SystemStarIcon
+              starType={selectedSystem.star.type}
+              mode="inspector"
+              uid="inspector"
+              className="flex items-center justify-center shrink-0"
+            />
             <div>
               <div className="text-base font-bold text-blue-300">{selectedSystem.star.name}</div>
               <div className="flex items-center gap-2">
@@ -204,9 +198,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
   const [expanded, setExpanded] = useState({ stars: true, planets: true });
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, content: null });
 
-  const displayStarInfo = getStarByType(selectedSystem?.star?.type);
-  const iconSize = displayStarInfo?.data?.size?.iconSize || 48;
-  const inspectorStarSize = displayStarInfo?.data?.size?.inspector || 16;
+  const { starInfo: displayStarInfo } = getStarVisual(selectedSystem?.star?.type);
 
   return (
     <aside className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 shadow-xl z-20">
@@ -245,8 +237,6 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
                   onToggle={() => setExpanded((prev) => ({ ...prev, stars: !prev.stars }))}
                   selectedSystem={selectedSystem}
                   displayStarInfo={displayStarInfo}
-                  iconSize={iconSize}
-                  inspectorStarSize={inspectorStarSize}
                   setTooltip={setTooltip}
                 />
 

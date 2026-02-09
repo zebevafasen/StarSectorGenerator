@@ -1,8 +1,7 @@
 import React, { memo } from 'react';
 import { HEX_SIZE, HEX_HEIGHT } from '../constants';
 import { getHexId } from '../utils/helpers';
-import { getStarByType } from '../utils/starData';
-import StarIcon from './StarIcon';
+import SystemStarIcon from './SystemStarIcon';
 
 // Pre-calculate points since dimensions are constant
 const h = HEX_HEIGHT / 2;
@@ -21,10 +20,6 @@ const HEX_POINTS = `
 const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
   const x = HEX_SIZE * 1.5 * q;
   const y = HEX_HEIGHT * (r + 0.5 * (q % 2));
-
-  const starType = systemData?.star?.type;
-  const displayStarInfo = getStarByType(starType);
-  const mapRadius = (displayStarInfo ? displayStarInfo.data.size.map : 1) * (HEX_SIZE / 4);
   
   return (
     <g 
@@ -53,12 +48,7 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
       </text>
 
       {hasSystem && (
-        <StarIcon 
-          colors={displayStarInfo?.color} 
-          radius={mapRadius} 
-          outerRadius={mapRadius * 1.2}
-          uid={`${q}-${r}`}
-        />
+        <SystemStarIcon starType={systemData?.star?.type} uid={`${q}-${r}`} />
       )}
     </g>
   );
