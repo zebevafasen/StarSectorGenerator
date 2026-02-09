@@ -22,7 +22,7 @@ function SectionToggleButton({ icon, label, isExpanded, onToggle }) {
   );
 }
 
-function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, setTooltip }) {
+function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
   return (
     <div>
       <SectionToggleButton
@@ -46,9 +46,9 @@ function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, setT
               <div className="flex items-center gap-2">
                 <span
                   className="text-[10px] text-slate-400 font-bold uppercase cursor-help border-b border-dotted border-slate-600 hover:text-blue-400 hover:border-blue-400 transition-colors"
-                  onMouseEnter={() => setTooltip((prev) => ({ ...prev, show: true, content: displayStarInfo }))}
-                  onMouseMove={(e) => setTooltip((prev) => ({ ...prev, show: true, x: e.clientX, y: e.clientY }))}
-                  onMouseLeave={() => setTooltip((prev) => ({ ...prev, show: false }))}
+                  onMouseEnter={(e) => onTooltipEnter(e, displayStarInfo)}
+                  onMouseMove={onTooltipMove}
+                  onMouseLeave={onTooltipLeave}
                 >
                   {selectedSystem.star.type === 'Black Hole' ? 'Black Hole' :
                     selectedSystem.star.type === 'Neutron' ? 'Neutron Star' :
@@ -68,7 +68,7 @@ function StarSection({ expanded, onToggle, selectedSystem, displayStarInfo, setT
   );
 }
 
-function PlanetsSection({ expanded, onToggle, selectedSystem, setTooltip }) {
+function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
   return (
     <div>
       <SectionToggleButton
@@ -95,9 +95,9 @@ function PlanetsSection({ expanded, onToggle, selectedSystem, setTooltip }) {
                         <div
                           className="text-[10px] uppercase cursor-help transition-colors font-bold"
                           style={{ color: typeColor || '#64748b' }}
-                          onMouseEnter={() => setTooltip((prev) => ({ ...prev, show: true, content: planetData }))}
-                          onMouseMove={(e) => setTooltip((prev) => ({ ...prev, show: true, x: e.clientX, y: e.clientY }))}
-                          onMouseLeave={() => setTooltip((prev) => ({ ...prev, show: false }))}
+                          onMouseEnter={(e) => onTooltipEnter(e, planetData)}
+                          onMouseMove={onTooltipMove}
+                          onMouseLeave={onTooltipLeave}
                         >{body.type}</div>
                       </div>
                     </div>
@@ -174,6 +174,10 @@ function Tooltip({ tooltip }) {
   const info = content.class || content.type || {};
   const color = content.color || {};
   const accentColor = getMainColor(color);
+  const isStarTooltip = Boolean(content.class);
+  const ageRange = info.ageRange
+    ? `${info.ageRange.min} - ${info.ageRange.max} ${info.ageRange.unit}`
+    : null;
 
   return createPortal(
     <div
@@ -188,6 +192,14 @@ function Tooltip({ tooltip }) {
         {info.name}
       </div>
       <div className="text-xs text-slate-300 space-y-1">
+        {isStarTooltip && (
+          <>
+            <div><span className="font-bold" style={{ color: accentColor }}>Temp:</span> {info.temp || 'Unknown'}</div>
+            <div><span className="font-bold" style={{ color: accentColor }}>Mass:</span> {info.mass || 'Unknown'}</div>
+            <div><span className="font-bold" style={{ color: accentColor }}>Typical Age:</span> {info.typicalAge || 'Unknown'}</div>
+            <div><span className="font-bold" style={{ color: accentColor }}>Age Range:</span> {ageRange || 'Unknown'}</div>
+          </>
+        )}
         <div className="text-slate-300 pt-2">{info.description}</div>
       </div>
     </div>,
@@ -201,6 +213,28 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, content: null });
 
   const { starInfo: displayStarInfo } = getStarVisual(selectedSystem?.star?.type);
+
+  const handleTooltipEnter = (event, content) => {
+    setTooltip({
+      show: true,
+      x: event.clientX,
+      y: event.clientY,
+      content
+    });
+  };
+
+  const handleTooltipMove = (event) => {
+    setTooltip((prev) => ({
+      ...prev,
+      show: true,
+      x: event.clientX,
+      y: event.clientY
+    }));
+  };
+
+  const handleTooltipLeave = () => {
+    setTooltip((prev) => ({ ...prev, show: false }));
+  };
 
   return (
     <aside className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 shadow-xl z-20">
@@ -239,14 +273,18 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
                   onToggle={() => setExpanded((prev) => ({ ...prev, stars: !prev.stars }))}
                   selectedSystem={selectedSystem}
                   displayStarInfo={displayStarInfo}
-                  setTooltip={setTooltip}
+                  onTooltipEnter={handleTooltipEnter}
+                  onTooltipMove={handleTooltipMove}
+                  onTooltipLeave={handleTooltipLeave}
                 />
 
                 <PlanetsSection
                   expanded={expanded.planets}
                   onToggle={() => setExpanded((prev) => ({ ...prev, planets: !prev.planets }))}
                   selectedSystem={selectedSystem}
-                  setTooltip={setTooltip}
+                  onTooltipEnter={handleTooltipEnter}
+                  onTooltipMove={handleTooltipMove}
+                  onTooltipLeave={handleTooltipLeave}
                 />
 
                 <InstallationsSection selectedSystem={selectedSystem} />
