@@ -1,0 +1,25 @@
+{
+  "STAR_NAME_SUFFIXES": [
+    "Minor", "Major", "Terminus", "Spur", "Nexus", "Carinae", "Centauri", "Hydrae", "Draconis", "Orionis", "Vulpeculae", "Aquilae", "Pegasi", "Lyrae", "Cygnus", 
+    "Andromedae", "Persei", "Cassiopeiae", "Scorpii", "Sagittarii", "Capricorni", "Aquarii", "Piscium", "Aries", "Tauri", "Gemini", "Cancer", "Leo", "Virgo", "Librae", 
+    "Scorpii", "Sagittarii", "Octavi", "Octavus", "Primus", "Secundus", "Tertius", "Quartus", "Quintus", "Sextus", "Septimus", "Octavus", "Nonus", "Decimus"
+  ],
+  "NAME_PREFIXES": [
+    "Cor", "Ald", "Xen", "Tar", "Vel", "Sol", "Dra", "Mor", "Cy", "Lun", "Zor", "Sir", "Siri", "Alt", "Prox"
+  ],
+  "NAME_SUFFIXES": [
+    "os", "ia", "on", "us", "ar", "a", "prim", "ion", "ex", "is", "or", "an", "is", "rus", "th", "en", "ix", "cra", "ed", "um", "ra"
+  ],
+  "SYSTEM_NAME_SUFFIXES": [
+    "System", "Cluster", "Reach", "Expanse", "Quadrant", "Belt", "Domain", "Frontier", "Rift", "Territory", "Zone", "Ward", "Wilds"
+  ],
+  "GREEK_ALPHABET": [
+    "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"
+  ],
+  "GREEK_LETTERS": [
+    "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ"
+  ],
+  "ROMAN_NUMERALS": [
+    "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"
+  ]
+}

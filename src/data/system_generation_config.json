@@ -1,0 +1,12 @@
+{
+  "MAX_PLANETS": 10,
+  "PLANET_DISTANCE": {
+    "BASE": 0.5,
+    "VARIANCE": 0.4
+  },
+  "POPULATION": {
+    "CHANCE": 0.3,
+    "MAX": 1000000
+  },
+  "STATION_CHANCE": 0.4
+}

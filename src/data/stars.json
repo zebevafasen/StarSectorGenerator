@@ -1,0 +1,146 @@
+[
+  {
+    "type": "O",
+    "color": { "core": "#6fa8ff", "mid": "#a8c4ff", "halo": "#e1ecff" },
+    "class": {
+      "name": "O-type (Blue Hypergiant)",
+      "temp": "30,000 - 50,000 K",
+      "mass": "> 16 Msun",
+      "typicalAge": "< 10 M Years",
+      "ageRange": { "min": 1, "max": 8, "unit": "M Years" },
+      "description": "Extremely luminous, short-lived stars that flood sectors with ultraviolet radiation and ionizing winds."
+    },
+    "data": {
+      "freq": 0.01,
+      "size": { "inspector": 16, "iconSize": 64, "map": 1.0 }
+    }
+  },
+  {
+    "type": "B",
+    "color": { "core": "#84b9ff", "mid": "#bfd4ff", "halo": "#f0f6ff" },
+    "class": {
+      "name": "B-type (Blue-White Giant)",
+      "temp": "10,000 - 30,000 K",
+      "mass": "2 - 16 Msun",
+      "typicalAge": "10 - 100 M Years",
+      "ageRange": { "min": 10, "max": 120, "unit": "M Years" },
+      "description": "Bright, young stars that often reside in stellar nurseries and carve large ionized bubbles in nearby gas."
+    },
+    "data": {
+      "freq": 0.05,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.9 }
+    }
+  },
+  {
+    "type": "A",
+    "color": { "core": "#cfdfff", "mid": "#e8f0ff", "halo": "#ffffff" },
+    "class": {
+      "name": "A-type (White Star)",
+      "temp": "7,500 - 10,000 K",
+      "mass": "1.4 - 2.1 Msun",
+      "typicalAge": "100 - 500 M Years",
+      "ageRange": { "min": 100, "max": 900, "unit": "M Years" },
+      "description": "Prominent hydrogen Balmer lines, strong ultraviolet flux, and typically surrounded by dusty debris disks."
+    },
+    "data": {
+      "freq": 0.10,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.8 }
+    }
+  },
+  {
+    "type": "F",
+    "color": { "core": "#f6f1d5", "mid": "#fff4cf", "halo": "#fff9e0" },
+    "class": {
+      "name": "F-type (Yellow-White Star)",
+      "temp": "6,000 - 7,500 K",
+      "mass": "1.0 - 1.4 Msun",
+      "typicalAge": "1 - 4 B Years",
+      "ageRange": { "min": 1, "max": 4.5, "unit": "B Years" },
+      "description": "Stable main-sequence stars with shallow convective zones; good candidates for habitable-zone worlds."
+    },
+    "data": {
+      "freq": 0.15,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.75 }
+    }
+  },
+  {
+    "type": "G",
+    "color": { "core": "#ffd87f", "mid": "#ffe39f", "halo": "#fff5d5" },
+    "class": {
+      "name": "G-type (Yellow Star)",
+      "temp": "5,200 - 6,000 K",
+      "mass": "0.8 - 1.0 Msun",
+      "typicalAge": "4 - 10 B Years",
+      "ageRange": { "min": 4, "max": 10, "unit": "B Years" },
+      "description": "Solar analogs with balanced radiation and magnetic activity; habitable zones sit ~1 AU from the star."
+    },
+    "data": {
+      "freq": 0.20,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.6 }
+    }
+  },
+  {
+    "type": "K",
+    "color": { "core": "#ffbb66", "mid": "#ffd0a2", "halo": "#ffe9d1" },
+    "class": {
+      "name": "K-type (Orange Dwarf)",
+      "temp": "3,900 - 5,200 K",
+      "mass": "0.6 - 0.8 Msun",
+      "typicalAge": "10 - 30 B Years (main-sequence)",
+      "ageRange": { "min": 8, "max": 30, "unit": "B Years" },
+      "description": "Cooler, long-lived stars with wide, stable habitable zones and lower stellar flare rates than M dwarfs."
+    },
+    "data": {
+      "freq": 0.30,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.55 }
+    }
+  },
+  {
+    "type": "M",
+    "color": { "core": "#ff7a45", "mid": "#ff9b6f", "halo": "#ffd7be" },
+    "class": {
+      "name": "M-type (Red Dwarf)",
+      "temp": "2,400 - 3,900 K",
+      "mass": "0.08 - 0.6 Msun",
+      "typicalAge": "> 30 B Years (projected)",
+      "ageRange": { "min": 20, "max": 200, "unit": "B Years" },
+      "description": "Most common stellar class; dim output but lifespans in the trillions of years. Habitable worlds must orbit closely."
+    },
+    "data": {
+      "freq": 0.19,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.5 }
+    }
+  },
+  {
+    "type": "Neutron",
+    "color": { "core": "#7ef3ff", "mid": "#c6fbff", "halo": "#ffffff" },
+    "class": {
+      "name": "Neutron Star",
+      "temp": "600,000 - 1,000,000 K",
+      "mass": "1.4 - 2.1 Msun",
+      "typicalAge": "10 - 100 M Years",
+      "ageRange": { "min": 10, "max": 100, "unit": "M Years" },
+      "description": "Ultra-dense remnants of supernovae; emit intense X-rays and gamma rays, often with strong magnetic fields."
+    },
+    "data": {
+      "freq": 0.06,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.4 }
+    }
+  },
+  {
+    "type": "Black Hole",
+    "color": { "core": "#05070f", "mid": "#401f5b", "halo": "#b389ff" },
+    "class": {
+      "name": "Stellar-mass Black Hole",
+      "temp": "Hawking radiation negligible",
+      "mass": "> 3 Msun",
+      "typicalAge": "Remnant (0 - 100 M Years)",
+      "ageRange": { "min": 0.01, "max": 100, "unit": "M Years" },
+      "description": "Collapsed stellar cores with gravity so strong that not even light can escape; detectable by accretion disks or gravitational effects."
+    },
+    "data": {
+      "freq": 0.04,
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.3 }
+    }
+  }
+]
