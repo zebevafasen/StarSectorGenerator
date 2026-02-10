@@ -81,9 +81,14 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
         stars.map((star, index) => {
           const { xOffset, yOffset, scale } = getSystemStarLayout(stars.length, index);
           return (
-            <g key={index} transform={`translate(${xOffset},${yOffset}) scale(${scale})`}>
-              <SystemStarIcon starType={star.type} uid={`${q}-${r}-${index}`} />
-            </g>
+            <SystemStarIcon 
+              key={index} 
+              starType={star.type} 
+              uid={`${q}-${r}-${index}`} 
+              x={xOffset} 
+              y={yOffset} 
+              scale={scale}
+            />
           );
         })}
 

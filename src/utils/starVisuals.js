@@ -3,18 +3,17 @@ import { getStarByType } from './starData';
 
 export const getStarVisual = (starType) => {
   const starInfo = getStarByType(starType);
+  const sizeConfig = starInfo?.data?.size || {};
 
-  const mapRadius = (starInfo?.data?.size?.map ?? 1) * (HEX_SIZE / 4);
-  const inspectorRadius = starInfo?.data?.size?.inspector ?? 16;
-  const inspectorIconSize = starInfo?.data?.size?.iconSize ?? 48;
-
+  // Base radii from data or sensible defaults
+  const baseMapRadius = (sizeConfig.map ?? 1) * (HEX_SIZE / 4);
+  const baseInspectorRadius = sizeConfig.inspector ?? 16;
+  
   return {
     starInfo,
     colors: starInfo?.color,
-    mapRadius,
-    mapOuterRadius: mapRadius * 1.2,
-    inspectorRadius,
-    inspectorOuterRadius: inspectorRadius * 1.2,
-    inspectorIconSize
+    baseMapRadius,
+    baseInspectorRadius,
+    inspectorIconSize: sizeConfig.iconSize ?? 48
   };
 };
