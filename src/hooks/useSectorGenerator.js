@@ -12,7 +12,8 @@ export const DEFAULT_GENERATOR_SETTINGS = {
   rangeLimits: DEFAULTS.RANGE,
   distributionMode: 'uniform',
   seed: '',
-  autoGenerateSeed: false
+  autoGenerateSeed: false,
+  sectorCoords: { q: 0, r: 0 }
 };
 
 export function useSectorGenerator(onGenerate, initialSettings = {}) {
@@ -30,7 +31,8 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       ...prev,
       ...initialSettings,
       pendingGridSize: initialSettings.pendingGridSize || prev.pendingGridSize,
-      rangeLimits: initialSettings.rangeLimits || prev.rangeLimits
+      rangeLimits: initialSettings.rangeLimits || prev.rangeLimits,
+      sectorCoords: initialSettings.sectorCoords || prev.sectorCoords
     }));
     setPrevInitialSettings(initialSettings);
   }
@@ -47,6 +49,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
     let currentSeed = settings.seed;
     if (settings.autoGenerateSeed) {
       currentSeed = Math.random().toString(36).substring(7).toUpperCase();
+      // We update the seed in state but use the new seed immediately for generation
       updateSettings({ seed: currentSeed });
     }
 
@@ -54,8 +57,8 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       ...settings,
       gridSize: settings.pendingGridSize,
       seed: currentSeed,
-      sectorQ: 0,
-      sectorR: 0
+      sectorQ: settings.sectorCoords.q,
+      sectorR: settings.sectorCoords.r
     });
 
     onGenerate(newSystems, settings.pendingGridSize);

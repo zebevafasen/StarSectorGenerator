@@ -23,6 +23,21 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
     generate
   } = useSectorGenerator(onGenerate, initialSettings);
 
+  const prevSectorCoords = React.useRef(settings.sectorCoords);
+
+  useEffect(() => {
+    const currentCoords = settings.sectorCoords;
+    const prevCoords = prevSectorCoords.current;
+
+    // Check if coordinates have changed
+    if (currentCoords && prevCoords && (currentCoords.q !== prevCoords.q || currentCoords.r !== prevCoords.r)) {
+      generate();
+      prevSectorCoords.current = currentCoords;
+    } else if (currentCoords && !prevCoords) {
+        prevSectorCoords.current = currentCoords;
+    }
+  }, [settings.sectorCoords, generate]);
+
   const isAprilFools = new Date().getMonth() === 3 && new Date().getDate() === 1;
 
   useEffect(() => {

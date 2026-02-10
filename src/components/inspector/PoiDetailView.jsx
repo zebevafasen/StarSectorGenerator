@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, MapPin, Activity, ShieldAlert } from 'lucide-react';
+import { Info, MapPin, Activity, ShieldAlert, Milestone } from 'lucide-react';
 import PoiIcon from '../PoiIcon';
 import { DetailHeader, DetailHero, SectionToggleButton, SectionBody, InfoItem } from './InspectorUi';
 import { useAccordion } from '../../hooks/useAccordion';
@@ -13,9 +13,12 @@ const getRiskColorClass = (risk) => {
   return 'text-slate-400';
 };
 
-export default function PoiDetailView({ object, onBack }) {
+export default function PoiDetailView({ object, onBack, onJump }) {
   const { data: poi } = object;
   const { expanded, toggle } = useAccordion({ details: true });
+
+  const isJumpGate = (poi.type === 'Jump-Gate' || poi.type === 'Jump Gate');
+  const canJump = isJumpGate && poi.state === 'Active' && poi.destination;
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -50,6 +53,23 @@ export default function PoiDetailView({ object, onBack }) {
               colorClass="text-purple-400"
             />
           )}
+        </div>
+      )}
+
+      {canJump && (
+        <div className="p-3 bg-indigo-900/30 border border-indigo-500/30 rounded-lg">
+          <div className="flex items-center gap-2 mb-2 text-indigo-300 text-xs font-bold uppercase tracking-wider">
+            <Milestone size={12} /> Target Vector Locked
+          </div>
+          <div className="text-sm text-white font-mono mb-3">
+            Sector [{poi.destination.q}, {poi.destination.r}]
+          </div>
+          <button
+            onClick={() => onJump(poi.destination)}
+            className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <Milestone size={16} /> Initiate Jump
+          </button>
         </div>
       )}
 

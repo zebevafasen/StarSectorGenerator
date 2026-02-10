@@ -142,7 +142,7 @@ export const generateSector = ({
 
   emptyCoords.forEach(({ q, r }) => {
     if (rng() < SYSTEM_GENERATION.POI_CHANCE) {
-      systemsByCoord[`${q},${r}`] = generatePOIAtCoordinate(rng, q, r);
+      systemsByCoord[`${q},${r}`] = generatePOIAtCoordinate(rng, q, r, sectorQ, sectorR);
     }
   });
 
