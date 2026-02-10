@@ -1,0 +1,47 @@
+[
+    {
+        "name": "Temperate",
+        "description": "A planet with moderate temperatures, suitable for human life and a wide range of ecosystems.",
+        "data": {
+            "habitable": true,
+            "habitabilityRate": 1.0,
+            "temperatureRange": { "min": -20, "max": 40, "unit": "°C" }
+        }
+    },
+    {
+        "name": "Cold",
+        "description": "A planet with low temperatures, often covered in ice and snow, with limited habitability.",
+        "data": {
+            "habitable": true,
+            "habitabilityRate": 0.5,
+            "temperatureRange": { "min": -100, "max": 5, "unit": "°C" }
+        }
+    },
+    {
+        "name": "Hot",
+        "description": "A planet with high temperatures, often due to proximity to its star or a runaway greenhouse effect, making it nearly inhospitable.",
+        "data": {
+            "habitable": true,
+            "habitabilityRate": 0.2,
+            "temperatureRange": { "min": 35, "max": 200, "unit": "°C" }
+        }
+    },
+    {
+        "name": "Frozen",
+        "description": "A planet with extremely low temperatures, often with a frozen surface and a thin or nonexistent atmosphere, making it largely uninhabitable.",
+        "data": {
+            "habitable": false,
+            "habitabilityRate": 0.0,
+            "temperatureRange": { "min": -273, "max": -100, "unit": "°C" }
+        }
+    },
+    {
+        "name": "Scorching",
+        "description": "A planet with surface temperatures so high that they can melt rock and metal, often due to extreme proximity to its star or intense greenhouse effects, rendering it completely uninhabitable.",
+        "data": {
+            "habitable": false,
+            "habitabilityRate": 0.0,
+            "temperatureRange": { "min": 200, "max": 5000, "unit": "°C" }
+        }
+    }
+]

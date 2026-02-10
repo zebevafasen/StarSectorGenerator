@@ -1,0 +1,77 @@
+import generatorConfig from '../data/generator_config.json';
+import { createRNG, stringToSeed } from '../utils/rng';
+import { createWeightedStarPicker } from '../utils/starData';
+import { generateSystemAtCoordinate } from './systemGeneration';
+
+const { DENSITY_PRESETS } = generatorConfig;
+
+export const calculateTargetCount = (mode, preset, manual, limits, totalHexes, rng) => {
+  if (mode === 'preset') {
+    const presetData = DENSITY_PRESETS.find((item) => item.value === preset);
+    return Math.floor(totalHexes * (presetData ? presetData.rate : 0.3));
+  }
+
+  if (mode === 'manual') {
+    return Math.min(Math.max(0, manual), totalHexes);
+  }
+
+  if (mode === 'range') {
+    const min = Math.min(limits.min, totalHexes);
+    const max = Math.min(Math.max(limits.max, min), totalHexes);
+    return Math.floor(rng() * (max - min + 1)) + min;
+  }
+
+  return 0;
+};
+
+const getShuffledCoordinates = (width, height, rng) => {
+  const coords = [];
+  for (let q = 0; q < width; q++) {
+    for (let r = 0; r < height; r++) {
+      coords.push({ q, r });
+    }
+  }
+
+  for (let i = coords.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [coords[i], coords[j]] = [coords[j], coords[i]];
+  }
+
+  return coords;
+};
+
+export const generateSector = ({
+  seed,
+  gridSize,
+  densityMode,
+  densityPreset,
+  manualCount,
+  rangeLimits,
+  sectorQ = 0,
+  sectorR = 0
+}) => {
+  const sectorSeedString = `${seed}_${sectorQ}_${sectorR}`;
+  const numericSeed = stringToSeed(sectorSeedString);
+  const rng = createRNG(numericSeed);
+
+  const totalHexes = gridSize.width * gridSize.height;
+  const targetCount = calculateTargetCount(densityMode, densityPreset, manualCount, rangeLimits, totalHexes, rng);
+
+  const coords = getShuffledCoordinates(gridSize.width, gridSize.height, rng);
+  const pickStar = createWeightedStarPicker();
+  const systemsByCoord = {};
+
+  coords.slice(0, targetCount).forEach(({ q, r }) => {
+    systemsByCoord[`${q},${r}`] = generateSystemAtCoordinate({
+      q,
+      r,
+      rng,
+      systemsByCoord,
+      pickStar,
+      sectorQ,
+      sectorR
+    });
+  });
+
+  return systemsByCoord;
+};

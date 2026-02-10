@@ -1,0 +1,42 @@
+[
+    {
+    "name": "Breathable",
+    "description": "A planet with an atmosphere that can support human life without the need for specialized equipment.",
+    "data": {
+      "habitable": true,
+      "habitabilityRate": 1.0
+    }
+    },
+    {
+    "name": "Toxic",
+    "description": "An atmosphere containing harmful gases or chemicals that pose a danger to human health.",
+    "data": {
+      "habitable": false,
+      "habitabilityRate": 0.0
+    }
+    },
+    {
+    "name": "Corrosive",
+    "description": "An atmosphere that can cause damage to materials and structures, often due to acidic or reactive components.",
+    "data": {
+      "habitable": true,
+      "habitabilityRate": 0.1
+    }
+    },
+    {
+    "name": "Thin",
+    "description": "An atmosphere with low pressure, providing limited protection from radiation and extreme temperatures.",
+    "data": {
+      "habitable": true,
+      "habitabilityRate": 0.5
+    }
+    },
+    {
+    "name": "Dense",
+    "description": "An atmosphere with high pressure, which can create a greenhouse effect and lead to extreme surface conditions.",
+    "data": {
+      "habitable": true,
+      "habitabilityRate": 0.3
+    }
+    }
+]

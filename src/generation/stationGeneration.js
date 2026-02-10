@@ -1,0 +1,73 @@
+import namesData from '../data/names.json';
+import systemConfig from '../data/system_generation_config.json';
+import { hashToUnit } from '../utils/rng';
+
+const { MAX_STATIONS, STATIONS = {} } = systemConfig;
+const DEFAULT_STATION_BASE_CHANCE = 0.8;
+const DEFAULT_STATION_STEP_PENALTY = 0.25;
+const DEFAULT_STATION_FALLBACK_NAME = STATIONS.fallbackName || 'Outpost';
+
+const pickStationFromPool = (seed, pool) => {
+  if (pool.length === 0) {
+    return null;
+  }
+
+  const totalWeight = pool.reduce((sum, station) => sum + (station.data?.generationWeight || 0), 0);
+  let value = hashToUnit(seed) * totalWeight;
+
+  for (let i = 0; i < pool.length; i++) {
+    const stationType = pool[i];
+    value -= stationType.data?.generationWeight || 0;
+    if (value <= 0) {
+      pool.splice(i, 1);
+      return { ...stationType };
+    }
+  }
+
+  return { ...pool.pop() };
+};
+
+export const generateStations = ({ seedBase, hasInhabitedPlanet, stationsData }) => {
+  if (!hasInhabitedPlanet || stationsData.length === 0) {
+    return [];
+  }
+
+  const stations = [];
+  const availableStationTypes = [...stationsData];
+
+  const firstStation = pickStationFromPool(`${seedBase}:station_0`, availableStationTypes);
+  if (firstStation) {
+    stations.push(firstStation);
+  }
+
+  for (let i = 1; i < MAX_STATIONS; i++) {
+    const chance = (STATIONS.baseChance ?? DEFAULT_STATION_BASE_CHANCE) - (i * (STATIONS.stepPenalty ?? DEFAULT_STATION_STEP_PENALTY));
+    if (hashToUnit(`${seedBase}:has_station_${i}`) < chance) {
+      const nextStation = pickStationFromPool(`${seedBase}:station_${i}`, availableStationTypes);
+      if (nextStation) {
+        stations.push(nextStation);
+      }
+    } else {
+      break;
+    }
+  }
+
+  return stations.map((station, index) => {
+    const stationTypeKey = station.type.toUpperCase().replace(/ /g, '_');
+    const prefixes = namesData[`${stationTypeKey}_PREFIXES`] || [];
+    const suffixes = namesData[`${stationTypeKey}_SUFFIXES`] || [];
+
+    let newName = station.name || DEFAULT_STATION_FALLBACK_NAME;
+    if (prefixes.length > 0 && suffixes.length > 0) {
+      const prefix = prefixes[Math.floor(hashToUnit(`${seedBase}:station_name_prefix_${index}`) * prefixes.length)];
+      const suffix = suffixes[Math.floor(hashToUnit(`${seedBase}:station_name_suffix_${index}`) * suffixes.length)];
+      newName = `${prefix} ${suffix}`;
+    } else if (prefixes.length > 0) {
+      newName = prefixes[Math.floor(hashToUnit(`${seedBase}:station_name_prefix_${index}`) * prefixes.length)];
+    } else if (suffixes.length > 0) {
+      newName = suffixes[Math.floor(hashToUnit(`${seedBase}:station_name_suffix_${index}`) * suffixes.length)];
+    }
+
+    return { ...station, name: newName };
+  });
+};
