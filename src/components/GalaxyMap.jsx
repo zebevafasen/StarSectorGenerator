@@ -23,11 +23,14 @@ export default function GalaxyMap({
     dragStartRef.current = { x: e.clientX, y: e.clientY };
   };
 
-  const handleMapClick = (e) => {
+  const handleSectorClick = (e, q, r) => {
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
-    if (Math.sqrt(dx * dx + dy * dy) < 5) {
-      // Background click
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Only select if it was a quick click, not a drag/pan
+    if (distance < 5) {
+      onSectorSelect?.({ q, r });
     }
   };
 
@@ -81,7 +84,7 @@ export default function GalaxyMap({
                   className="cursor-pointer group/sector"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSectorSelect?.({ q: sq, r: sr });
+                    handleSectorClick(e, sq, sr);
                   }}
                 >
                   {/* Sector Background / Hover Effect */}
