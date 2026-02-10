@@ -32,6 +32,9 @@
     {
     "name": "Jump Gate",
     "color": "#3f424a",
-    "description": "Massive structures that allow for instantaneous travel between two points in space. Their technology is highly advanced and not fully understood."
+    "description": "Massive structures that allow for instantaneous travel between two points in space. Their technology is highly advanced and not fully understood.",
+    "data": {
+        "maxPerSector": 1
+    }
     }
 ]
