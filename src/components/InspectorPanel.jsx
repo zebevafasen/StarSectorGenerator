@@ -1,11 +1,13 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { Map as MapIcon, Star, Info, Hexagon } from 'lucide-react';
 import { getHexId } from '../utils/helpers';
 import SelectionHeader from './inspector/SelectionHeader';
 import InspectorTooltip from './inspector/InspectorTooltip';
 import PlanetDetailView from './inspector/PlanetDetailView';
 import StarDetailView from './inspector/StarDetailView';
+import StationDetailView from './inspector/StationDetailView';
 import { useTooltip } from '../hooks/useTooltip';
+import { useAccordion } from '../hooks/useAccordion';
 import {
   StarSection,
   PlanetsSection,
@@ -15,7 +17,7 @@ import {
 
 function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
-  const [expanded, setExpanded] = useState({ stars: true, planets: true, stations: true, beltsAndFields: true });
+  const { expanded, toggle } = useAccordion({ stars: true, planets: true, stations: true, beltsAndFields: true });
   const { tooltip, handleTooltipEnter, handleTooltipMove, handleTooltipLeave } = useTooltip();
 
   const handleBackToSystem = () => setFocusedObject(null);
@@ -65,6 +67,12 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
                   systemName={selectedSystem.baseName || selectedSystem.name}
                   onBack={handleBackToSystem} 
                 />
+              ) : focusedObject.type === 'station' ? (
+                <StationDetailView 
+                  object={focusedObject} 
+                  systemName={selectedSystem.baseName || selectedSystem.name}
+                  onBack={handleBackToSystem} 
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center p-8 opacity-50">
                   <p>Detail view coming soon for {focusedObject.type}</p>
@@ -75,7 +83,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
               <div className="space-y-4">
                 <StarSection
                   expanded={expanded.stars}
-                  onToggle={() => setExpanded((prev) => ({ ...prev, stars: !prev.stars }))}
+                  onToggle={() => toggle('stars')}
                   selectedSystem={selectedSystem}
                   onTooltipEnter={handleTooltipEnter}
                   onTooltipMove={handleTooltipMove}
@@ -85,7 +93,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
 
                 <PlanetsSection
                   expanded={expanded.planets}
-                  onToggle={() => setExpanded((prev) => ({ ...prev, planets: !prev.planets }))}
+                  onToggle={() => toggle('planets')}
                   selectedSystem={selectedSystem}
                   onTooltipEnter={handleTooltipEnter}
                   onTooltipMove={handleTooltipMove}
@@ -95,7 +103,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
 
                 <StationsSection
                   expanded={expanded.stations}
-                  onToggle={() => setExpanded((prev) => ({ ...prev, stations: !prev.stations }))}
+                  onToggle={() => toggle('stations')}
                   selectedSystem={selectedSystem}
                   onTooltipEnter={handleTooltipEnter}
                   onTooltipMove={handleTooltipMove}
@@ -105,7 +113,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
 
                 <BeltsAndFieldsSection
                   expanded={expanded.beltsAndFields}
-                  onToggle={() => setExpanded((prev) => ({ ...prev, beltsAndFields: !prev.beltsAndFields }))}
+                  onToggle={() => toggle('beltsAndFields')}
                   selectedSystem={selectedSystem}
                 />
               </div>

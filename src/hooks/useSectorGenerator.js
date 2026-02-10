@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { generateSector } from '../generation/sectorGeneration';
 import generatorConfig from '../data/generator_config.json';
 
@@ -26,28 +26,49 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
   const [autoGenerateSeed, setAutoGenerateSeed] = useState(initialSettings.autoGenerateSeed ?? DEFAULT_GENERATOR_SETTINGS.autoGenerateSeed);
 
   // Sync with initialSettings ONLY when they change from an external source (like Import)
-  useEffect(() => {
-    if (!initialSettings || Object.keys(initialSettings).length === 0) return;
+  const [prevInitialSettings, setPrevInitialSettings] = useState(initialSettings);
 
-    // We use functional updates or simple checks to avoid unnecessary triggers
-    setPendingGridSize(prev => {
+  if (initialSettings !== prevInitialSettings) {
+    if (initialSettings.pendingGridSize) {
       const next = initialSettings.pendingGridSize;
-      return (next && (next.width !== prev.width || next.height !== prev.height)) ? next : prev;
-    });
+      if (next.width !== pendingGridSize.width || next.height !== pendingGridSize.height) {
+        setPendingGridSize(next);
+      }
+    }
     
-    setDensityMode(prev => initialSettings.densityMode !== undefined && initialSettings.densityMode !== prev ? initialSettings.densityMode : prev);
-    setDensityPreset(prev => initialSettings.densityPreset !== undefined && initialSettings.densityPreset !== prev ? initialSettings.densityPreset : prev);
-    setManualCount(prev => initialSettings.manualCount !== undefined && initialSettings.manualCount !== prev ? initialSettings.manualCount : prev);
+    if (initialSettings.densityMode !== undefined && initialSettings.densityMode !== densityMode) {
+      setDensityMode(initialSettings.densityMode);
+    }
     
-    setRangeLimits(prev => {
+    if (initialSettings.densityPreset !== undefined && initialSettings.densityPreset !== densityPreset) {
+      setDensityPreset(initialSettings.densityPreset);
+    }
+    
+    if (initialSettings.manualCount !== undefined && initialSettings.manualCount !== manualCount) {
+      setManualCount(initialSettings.manualCount);
+    }
+    
+    if (initialSettings.rangeLimits) {
       const next = initialSettings.rangeLimits;
-      return (next && (next.min !== prev.min || next.max !== prev.max)) ? next : prev;
-    });
+      if (next.min !== rangeLimits.min || next.max !== rangeLimits.max) {
+        setRangeLimits(next);
+      }
+    }
 
-    setDistributionMode(prev => initialSettings.distributionMode !== undefined && initialSettings.distributionMode !== prev ? initialSettings.distributionMode : prev);
-    setSeed(prev => initialSettings.seed !== undefined && initialSettings.seed !== prev ? initialSettings.seed : prev);
-    setAutoGenerateSeed(prev => initialSettings.autoGenerateSeed !== undefined && initialSettings.autoGenerateSeed !== prev ? initialSettings.autoGenerateSeed : prev);
-  }, [initialSettings]);
+    if (initialSettings.distributionMode !== undefined && initialSettings.distributionMode !== distributionMode) {
+      setDistributionMode(initialSettings.distributionMode);
+    }
+    
+    if (initialSettings.seed !== undefined && initialSettings.seed !== seed) {
+      setSeed(initialSettings.seed);
+    }
+    
+    if (initialSettings.autoGenerateSeed !== undefined && initialSettings.autoGenerateSeed !== autoGenerateSeed) {
+      setAutoGenerateSeed(initialSettings.autoGenerateSeed);
+    }
+
+    setPrevInitialSettings(initialSettings);
+  }
 
   const generate = useCallback(() => {
     let currentSeed = seed;

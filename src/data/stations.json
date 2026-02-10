@@ -2,81 +2,81 @@
   {
     "name": "Mining Outpost",
     "type": "Mining Outpost",
-    "description": "A small, automated facility extracting valuable resources from asteroids or planetary rings.",
-    "data": {
-      "generationWeight": 1.0
-    }
+    "description": "A small facility extracting valuable resources from asteroids or planetary rings.",
+    "color": "#94a3b8",
+    "populationRange": { "min": 10, "max": 200 },
+    "data": { "generationWeight": 1.0 }
   },
   {
     "name": "Research Station",
     "type": "Research Station",
-    "description": "Dedicated to scientific study, often in remote or hazardous regions, focusing on unique phenomena.",
-    "data": {
-      "generationWeight": 0.8
-    }
+    "description": "Dedicated to scientific study, focusing on unique phenomena.",
+    "color": "#22d3ee",
+    "populationRange": { "min": 20, "max": 500 },
+    "data": { "generationWeight": 0.8 }
   },
   {
     "name": "Refueling Depot",
     "type": "Refueling Depot",
-    "description": "A vital hub for starships to resupply fuel and basic provisions, often found near jump points.",
-    "data": {
-      "generationWeight": 0.9
-    }
+    "description": "A vital hub for starships to resupply fuel and basic provisions.",
+    "color": "#facc15",
+    "populationRange": { "min": 50, "max": 1000 },
+    "data": { "generationWeight": 0.9 }
   },
   {
     "name": "Pirate Haven",
     "type": "Pirate Haven",
-    "description": "A clandestine base of operations for outlaws and smugglers, hidden deep within asteroid fields or nebulae.",
-    "data": {
-      "generationWeight": 0.6
-    }
+    "description": "A clandestine base for outlaws, hidden within the void.",
+    "color": "#ef4444",
+    "populationRange": { "min": 100, "max": 5000 },
+    "data": { "generationWeight": 0.6 }
   },
   {
     "name": "Orbital Habitat",
     "type": "Orbital Habitat",
-    "description": "A self-sustaining space station providing living quarters and amenities for a permanent population.",
-    "data": {
-      "generationWeight": 0.7
-    }
+    "description": "A self-sustaining facility providing living quarters for a permanent population.",
+    "color": "#10b981",
+    "populationRange": { "min": 5000, "max": 100000 },
+    "data": { "generationWeight": 0.7 }
   },
   {
     "name": "Listening Post",
     "type": "Listening Post",
-    "description": "A remote surveillance station monitoring communications and detecting anomalies in deep space.",
-    "data": {
-      "generationWeight": 0.5
-    }
+    "description": "A remote surveillance station monitoring communications.",
+    "color": "#818cf8",
+    "populationRange": { "min": 5, "max": 50 },
+    "data": { "generationWeight": 0.5 }
   },
   {
     "name": "Trade Hub",
     "type": "Trade Hub",
-    "description": "A bustling commercial station where goods and services are exchanged, attracting merchants from across the sector.",
-    "data": {
-      "generationWeight": 1.1
-    }
+    "description": "A bustling commercial station where goods and services are exchanged.",
+    "color": "#fb923c",
+    "populationRange": { "min": 1000, "max": 50000 },
+    "data": { "generationWeight": 1.1 }
   },
   {
     "name": "Shipyard",
     "type": "Shipyard",
-    "description": "A large-scale facility dedicated to the construction, repair, and retrofitting of starships.",
-    "data": {
-      "generationWeight": 0.7
-    }
+    "description": "A facility dedicated to the construction and repair of starships.",
+    "color": "#38bdf8",
+    "populationRange": { "min": 500, "max": 20000 },
+    "data": { "generationWeight": 0.7 }
   },
   {
     "name": "Military Outpost",
     "type": "Military Outpost",
-    "description": "A fortified station serving as a strategic base for naval fleets, projecting power and ensuring sector security.",
-    "data": {
-      "generationWeight": 0.6
-    }
+    "description": "A fortified station serving as a base for naval fleets.",
+    "color": "#f87171",
+    "populationRange": { "min": 200, "max": 10000 },
+    "data": { "generationWeight": 0.6 }
   },
   {
     "name": "Derelict Station",
     "type": "Derelict Station",
-    "description": "The silent, drifting remains of a once-active station. It may hold forgotten secrets, dangers, or valuable salvage.",
-    "data": {
-      "generationWeight": 0.3
-    }
+    "description": "The silent remains of a once-active station.",
+    "color": "#475569",
+    "populationRange": { "min": 0, "max": 0 },
+    "data": { "generationWeight": 0.3 }
   }
 ]

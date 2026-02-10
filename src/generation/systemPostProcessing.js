@@ -17,8 +17,7 @@ export const postProcessSystems = (systems) =>
       const bodiesWithSize = processPlanetBodies({
         bodies: system.bodies,
         stars,
-        seedBase,
-        systemName: system.name
+        seedBase
       });
 
       const starsWithCompanions = appendCompanionStars({

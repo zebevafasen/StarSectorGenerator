@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Automated",
+    "description": "The facility is run almost entirely by AI and drone labor, requiring only a minimal maintenance crew.",
+    "populationModifier": 0.1
+  },
+  {
+    "name": "Overcrowded",
+    "description": "Built for half this many people, the station's life support is constantly strained.",
+    "populationModifier": 2.5
+  },
+  {
+    "name": "Black Market",
+    "description": "Hidden compartments and encrypted channels make this a haven for illicit trade.",
+    "populationModifier": 1.2
+  },
+  {
+    "name": "Top Secret",
+    "description": "Heavy encryption and armed guards keep the station's true purpose a mystery.",
+    "populationModifier": 0.8
+  },
+  {
+    "name": "Luxury Amenities",
+    "description": "High-end shopping, artificial parks, and gravity-wells attract the sector's elite.",
+    "populationModifier": 1.5
+  },
+  {
+    "name": "Failing Life Support",
+    "description": "The air is thin and the heat is inconsistent. The crew is desperate to leave.",
+    "populationModifier": 0.6
+  },
+  {
+    "name": "Modular Expansion",
+    "description": "Half-finished modules are being welded onto the hull, indicating rapid growth.",
+    "populationModifier": 1.3
+  },
+  {
+    "name": "Religious Order",
+    "description": "The station serves as a monastery or temple for a sect that finds solitude in the void.",
+    "populationModifier": 1.1
+  }
+]

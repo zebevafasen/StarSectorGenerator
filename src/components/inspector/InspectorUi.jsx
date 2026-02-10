@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react';
 
 export function SectionToggleButton({ icon, label, isExpanded, onToggle }) {
   return (
@@ -58,3 +58,52 @@ export function EntityCard({ leftIcon, title, subtitle, onClick }) {
     </div>
   );
 }
+
+export function DetailHeader({ title, subtitle, onBack }) {
+  return (
+    <div className="p-3 bg-slate-800/20 border border-slate-800 rounded-lg flex items-center gap-3">
+      <button 
+        onClick={onBack}
+        className="p-1.5 hover:bg-slate-700 rounded-md text-blue-400 transition-colors"
+        title="Back to System"
+      >
+        <ArrowLeft size={18} />
+      </button>
+      <div className="min-w-0">
+        <h2 className="text-base font-bold text-white leading-tight truncate">{title}</h2>
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+export function DetailHero({ icon, title, subtitle, color, badge }) {
+  return (
+    <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 flex items-center gap-4 relative overflow-hidden">
+      <div 
+        className="absolute inset-0 opacity-10 pointer-events-none"
+        style={{ background: `radial-gradient(circle at left, ${color}, transparent 70%)` }}
+      />
+      {icon}
+      <div>
+        <div className="text-lg font-bold" style={{ color: color }}>{title}</div>
+        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{subtitle}</div>
+      </div>
+      {badge && <div className="ml-auto">{badge}</div>}
+    </div>
+  );
+}
+
+export function InfoItem({ icon, label, value, subValue, colorClass }) {
+  return (
+    <div className="bg-slate-900/50 p-2 rounded border border-slate-800/50">
+      <div className={`flex items-center gap-1.5 ${colorClass} mb-1`}>
+        {React.cloneElement(icon, { size: 10 })}
+        <span className="text-[9px] font-bold uppercase">{label}</span>
+      </div>
+      <div className="text-xs font-medium text-slate-200">{value}</div>
+      {subValue && <div className="text-[9px] text-slate-500 truncate">{subValue}</div>}
+    </div>
+  );
+}
+

@@ -2,13 +2,15 @@ import React, { useMemo } from 'react';
 import { Star, Disc, Satellite, Users, Stone } from 'lucide-react';
 import PlanetIcon from '../PlanetIcon';
 import SystemStarIcon from '../SystemStarIcon';
-import planetSizesData from '../../data/planet_sizes.json';
-import namesData from '../../data/names.json';
-import { getStarVisual } from '../../utils/starVisuals';
 import { getMainColor } from '../../utils/colorSemantics';
-import { getAtmosphereByName, getTemperatureByName } from '../../utils/environmentData';
-import { getPlanetByType } from '../../utils/planetUtils';
+import { sortSystemBodies } from '../../utils/planetUtils';
 import { SectionToggleButton, SectionBody, TooltipTag, EntityCard } from './InspectorUi';
+import { 
+  getStarTooltipData, 
+  getPlanetTooltipData, 
+  getStationTooltipData, 
+  getPlanetSizeTooltipData 
+} from '../../utils/tooltipUtils';
 
 export function StarSection({ 
   expanded, 
@@ -33,18 +35,8 @@ export function StarSection({
       {expanded && (
         <SectionBody>
           {stars.map((star, index) => {
-            const { starInfo } = getStarVisual(star.type);
-            const starAccentColor = getMainColor(starInfo?.color);
-
-            const tooltipData = {
-              ...starInfo,
-              ...starInfo?.class,
-              name: star.name,
-              type: star.type,
-              age: star.age,
-              ageUnit: star.ageUnit,
-              isStar: true
-            };
+            const tooltipData = getStarTooltipData(star);
+            const accentColor = getMainColor(tooltipData.color);
 
             return (
               <EntityCard
@@ -62,7 +54,7 @@ export function StarSection({
                 subtitle={
                   <div className="flex items-center gap-2">
                     <TooltipTag
-                      color={starAccentColor}
+                      color={accentColor}
                       onTooltipEnter={onTooltipEnter}
                       onTooltipMove={onTooltipMove}
                       onTooltipLeave={onTooltipLeave}
@@ -91,28 +83,8 @@ export function PlanetsSection({
   onTooltipLeave,
   onFocus
 }) {
-  const sortedBodies = useMemo(() => {
-    if (!selectedSystem?.bodies?.length) {
-      return [];
-    }
-
-    return [...selectedSystem.bodies].sort((a, b) => {
-      const aIsPrimary = namesData.PRIMARY_PLANET_SUFFIXES.includes(a.name);
-      const bIsPrimary = namesData.PRIMARY_PLANET_SUFFIXES.includes(b.name);
-
-      if (aIsPrimary) return -1;
-      if (bIsPrimary) return 1;
-      
-      if (a.isInhabited && !b.isInhabited) return -1;
-      if (!a.isInhabited && b.isInhabited) return 1;
-
-      if (a.isInhabited && b.isInhabited) {
-        return (b.population || 0) - (a.population || 0);
-      }
-
-      return 0;
-    });
-  }, [selectedSystem]);
+  const systemName = selectedSystem.baseName || selectedSystem.name;
+  const sortedBodies = useMemo(() => sortSystemBodies(selectedSystem.bodies), [selectedSystem.bodies]);
 
   return (
     <div>
@@ -128,37 +100,13 @@ export function PlanetsSection({
           {selectedSystem.bodies.length > 0 ? (
             <div className="space-y-2">
               {sortedBodies.map((body, index) => {
-                const planetData = getPlanetByType(body.type) || {};
-                const typeColor = getMainColor(planetData.color);
-                const planetTypeInfo = planetData.type || {};
-                const planetStats = planetData.data || {};
-                const atmosphere = getAtmosphereByName(body.atmosphere);
-                const temperature = getTemperatureByName(body.temperature);
-                const displayedHabitabilityRate = typeof body.habitabilityRate === 'number'
-                  ? body.habitabilityRate
-                  : planetStats.habitabilityRate;
-
-                const tooltipData = {
-                  ...planetData,
-                  name: `${selectedSystem.baseName || selectedSystem.name} ${body.name}`,
-                  type: body.type,
-                  size: body.size,
-                  atmosphere: body.atmosphere,
-                  atmosphereDescription: atmosphere?.description,
-                  temperature: body.temperature,
-                  temperatureDescription: temperature?.description,
-                  temperatureRange: temperature?.data?.temperatureRange,
-                  planetTypeName: planetTypeInfo.name || body.type,
-                  description: planetTypeInfo.description,
-                  habitability: body.habitable === true ? 'Habitable' : body.habitable === false ? 'Non-habitable' : planetStats.habitable === true ? 'Habitable' : planetStats.habitable === false ? 'Non-habitable' : null,
-                  habitabilityRate: typeof displayedHabitabilityRate === 'number' ? `${Math.round(displayedHabitabilityRate * 100)}%` : null,
-                  isPlanet: true
-                };
+                const tooltipData = getPlanetTooltipData(body, systemName);
+                const typeColor = getMainColor(tooltipData.color);
 
                 const nameLabel =
                   body.namingStyle === 'prefix'
-                    ? `${body.name} ${selectedSystem.baseName || selectedSystem.name}`
-                    : `${selectedSystem.baseName || selectedSystem.name} ${body.name}`;
+                    ? `${body.name} ${systemName}`
+                    : `${systemName} ${body.name}`;
 
                 return (
                   <EntityCard
@@ -188,11 +136,7 @@ export function PlanetsSection({
                           onTooltipEnter={onTooltipEnter}
                           onTooltipMove={onTooltipMove}
                           onTooltipLeave={onTooltipLeave}
-                          tooltipData={{
-                            name: body.size,
-                            description: planetSizesData.find((size) => size.name === body.size)?.description,
-                            isPlanetSize: true
-                          }}
+                          tooltipData={getPlanetSizeTooltipData(body.size)}
                         >
                           {body.size}
                         </TooltipTag>
@@ -248,18 +192,16 @@ export function StationsSection({
           {stations.length > 0 ? (
             <div className="space-y-2">
               {stations.map((station, index) => {
-                const tooltipData = {
-                  name: station.name,
-                  type: station.type,
-                  description: station.description,
-                  isStation: true
-                };
+                const tooltipData = getStationTooltipData(station);
                 return (
                   <EntityCard
                     key={index}
                     onClick={() => onFocus?.({ type: 'station', data: station, tooltipData })}
                     leftIcon={
-                      <div className="p-1.5 bg-blue-900/50 rounded text-blue-300 shrink-0">
+                      <div 
+                        className="p-1.5 rounded text-white shrink-0"
+                        style={{ backgroundColor: station.color || '#1e3a8a' }}
+                      >
                         <Satellite size={14} />
                       </div>
                     }
@@ -267,7 +209,7 @@ export function StationsSection({
                     subtitle={
                       <span className="text-[10px] text-blue-400 uppercase">
                         <TooltipTag
-                          color="#60a5fa"
+                          color={station.color || "#60a5fa"}
                           onTooltipEnter={onTooltipEnter}
                           onTooltipMove={onTooltipMove}
                           onTooltipLeave={onTooltipLeave}

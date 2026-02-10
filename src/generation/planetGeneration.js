@@ -160,7 +160,7 @@ const enforceSystemLogic = (bodies) => {
   return bodies;
 };
 
-const applyNaming = (bodies, seedBase, systemName) => {
+const applyNaming = (bodies, seedBase) => {
   const useGreekAlphabet = hashToUnit(`${seedBase}:naming_scheme`) < 0.5;
   const namingList = useGreekAlphabet ? namesData.GREEK_ALPHABET : namesData.ROMAN_NUMERALS;
 
@@ -274,7 +274,7 @@ const calculatePopulation = (body, seedBase) => {
   return Math.floor(finalPop);
 };
 
-export const processPlanetBodies = ({ bodies, stars, seedBase, systemName }) => {
+export const processPlanetBodies = ({ bodies, stars, seedBase }) => {
   let nextBodies = bodies;
   nextBodies = ensureHabitablePlanetWhenPossible(nextBodies, stars, seedBase);
   const bodiesWithEnvironment = nextBodies?.map((body, index) => {
@@ -314,7 +314,7 @@ export const processPlanetBodies = ({ bodies, stars, seedBase, systemName }) => 
   const withInhabitants = assignInhabitationStatus(bodiesWithEnvironment, seedBase);
   const withTags = assignPlanetTags(withInhabitants, seedBase);
   const logicApplied = enforceSystemLogic(withTags);
-  const named = applyNaming(logicApplied, seedBase, systemName);
+  const named = applyNaming(logicApplied, seedBase);
 
   return named.map((body, index) => ({
     ...body,
