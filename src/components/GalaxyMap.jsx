@@ -1,81 +1,24 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { HEX_SIZE, HEX_HEIGHT, GALAXY_CHUNK_BUFFER } from '../constants';
-import { generateSector } from '../generation/sectorGeneration';
+import React, { useMemo, useState, useRef } from 'react';
+import { HEX_SIZE, HEX_HEIGHT } from '../constants';
 import HexagonShape from './HexagonShape';
 import { usePanZoom } from '../hooks/usePanZoom';
 import MapBackground from './starmap/MapBackground';
 
 export default function GalaxyMap({
-  seed,
-  gridSize,
-  generatorSettings,
-  initialSectorCoords,
-  onSectorSelect
+  universe,
+  initialSectorCoords
 }) {
-  // Start centered on the initial sector
-  const [viewState, setViewState] = useState({ scale: 0.5, x: window.innerWidth / 2, y: window.innerHeight / 2 });
+  const [viewState, setViewState] = useState({ scale: 0.3, x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const panZoomHandlers = usePanZoom(viewState, setViewState);
   const dragStartRef = useRef({ x: 0, y: 0 });
 
-  // Cache generated sectors to prevent re-running generation on every frame
-  // Key: "q,r" -> Value: systemData
-  const [sectorCache, setSectorCache] = useState({});
-
-  // Dimensions of a single sector in pixels
-  const sectorPixelWidth = useMemo(() => (gridSize.width * 1.5 * HEX_SIZE) + (HEX_SIZE * 0.5), [gridSize]); // Slight adjustment for hex overlap logic?
-  // Actually, standard spacing is 1.5 * size per column. 
-  // Width = (cols * 1.5 * size) + (0.5 * size) to close the last hex edge? 
-  // Let's stick to the tile stride: 
-  const sectorStrideX = gridSize.width * 1.5 * HEX_SIZE;
-  const sectorStrideY = gridSize.height * HEX_HEIGHT;
-
-  // Calculate visible sectors based on viewState
-  const visibleSectors = useMemo(() => {
-    // Invert the transform to find the "world" coordinates of the viewport
-    const viewportLeft = -viewState.x / viewState.scale;
-    const viewportTop = -viewState.y / viewState.scale;
-    const viewportRight = (window.innerWidth - viewState.x) / viewState.scale;
-    const viewportBottom = (window.innerHeight - viewState.y) / viewState.scale;
-
-    const startQ = Math.floor(viewportLeft / sectorStrideX) - GALAXY_CHUNK_BUFFER;
-    const endQ = Math.floor(viewportRight / sectorStrideX) + GALAXY_CHUNK_BUFFER;
-    const startR = Math.floor(viewportTop / sectorStrideY) - GALAXY_CHUNK_BUFFER;
-    const endR = Math.floor(viewportBottom / sectorStrideY) + GALAXY_CHUNK_BUFFER;
-
-    const sectors = [];
-    for (let q = startQ; q <= endQ; q++) {
-      for (let r = startR; r <= endR; r++) {
-        sectors.push({ q, r });
-      }
-    }
-    return sectors;
-  }, [viewState, sectorStrideX, sectorStrideY]);
-
-  // Generate missing sectors
-  useEffect(() => {
-    let newCache = {};
-    let hasNew = false;
-
-    visibleSectors.forEach(({ q, r }) => {
-      const key = `${q},${r}`;
-      if (!sectorCache[key]) {
-        // Generate on the fly!
-        const systems = generateSector({
-          ...generatorSettings,
-          seed,
-          sectorQ: q,
-          sectorR: r,
-          gridSize // Ensure consistent grid size
-        });
-        newCache[key] = systems;
-        hasNew = true;
-      }
-    });
-
-    if (hasNew) {
-      setSectorCache(prev => ({ ...prev, ...newCache }));
-    }
-  }, [visibleSectors, sectorCache, seed, generatorSettings, gridSize]);
+  // Calculate sector offsets based on their Q,R coordinates
+  // We use a fixed stride for the galaxy view to keep things simple
+  // Assumes sectors use standard 8x10 or similar even grid widths
+  const getSectorStride = (gridSize) => ({
+    x: gridSize.width * 1.5 * HEX_SIZE,
+    y: gridSize.height * HEX_HEIGHT
+  });
 
   const handleMouseDownCapture = (e) => {
     dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -84,18 +27,21 @@ export default function GalaxyMap({
   const handleMapClick = (e) => {
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
-    // Only trigger click if it wasn't a drag
     if (Math.sqrt(dx * dx + dy * dy) < 5) {
-      // Find which sector and hex was clicked? 
-      // For now, just allow panning. 
-      // If we want to jump to a sector, we'd need to inverse map the mouse.
+      // Future: Implement sector selection to jump back to Local View
     }
   };
+
+  const exploredSectors = useMemo(() => Object.entries(universe), [universe]);
 
   return (
     <div className="flex-1 relative bg-slate-950 overflow-hidden cursor-move w-full h-full">
       <MapBackground viewState={viewState} />
       
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 bg-slate-900/60 backdrop-blur-sm border border-slate-800 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest text-slate-400 font-bold shadow-2xl">
+        Explored Universe ({exploredSectors.length} Sectors)
+      </div>
+
       <div
         className="w-full h-full"
         {...panZoomHandlers}
@@ -104,35 +50,55 @@ export default function GalaxyMap({
       >
         <svg width="100%" height="100%">
           <g transform={`translate(${viewState.x}, ${viewState.y}) scale(${viewState.scale})`}>
-            {visibleSectors.map(({ q: sq, r: sr }) => {
-              const systems = sectorCache[`${sq},${sr}`];
-              if (!systems) return null;
-
-              const sectorOffsetX = sq * sectorStrideX;
-              const sectorOffsetY = sr * sectorStrideY;
+            {exploredSectors.map(([key, sectorData]) => {
+              const [sq, sr] = key.split(',').map(Number);
+              const { systems, gridSize } = sectorData;
+              const stride = getSectorStride(gridSize);
+              
+              const sectorOffsetX = sq * stride.x;
+              const sectorOffsetY = sr * stride.y;
 
               return (
-                <g key={`${sq},${sr}`} transform={`translate(${sectorOffsetX}, ${sectorOffsetY})`}>
-                  {/* Debug Border 
-                  <rect width={sectorStrideX} height={sectorStrideY} fill="none" stroke="red" strokeWidth="2" opacity="0.2" />
-                  */}
+                <g key={key} transform={`translate(${sectorOffsetX}, ${sectorOffsetY})`}>
+                  {/* Sector Boundary */}
+                  <rect 
+                    width={stride.x} 
+                    height={stride.y} 
+                    fill="none" 
+                    stroke="white" 
+                    strokeWidth="2" 
+                    opacity="0.05" 
+                    className="pointer-events-none"
+                  />
                   
+                  {/* Hexes in this sector */}
                   {Array.from({ length: gridSize.width }).map((_, q) => (
                     Array.from({ length: gridSize.height }).map((_, r) => {
                       const sys = systems[`${q},${r}`];
+                      if (!sys) return null;
                       return (
                         <HexagonShape
                           key={`${q},${r}`}
                           q={q}
                           r={r}
-                          hasSystem={!!sys}
+                          hasSystem={true}
                           systemData={sys}
                           isSelected={false}
-                          onClick={() => {}} // Disable interaction in galaxy view for now
+                          onClick={() => {}} 
                         />
                       );
                     })
                   ))}
+
+                  {/* Sector Coordinate Label */}
+                  <text
+                    x={stride.x / 2}
+                    y={-10}
+                    className="text-xs fill-slate-600 font-mono font-bold select-none pointer-events-none"
+                    textAnchor="middle"
+                  >
+                    [{sq}, {sr}]
+                  </text>
                 </g>
               );
             })}
