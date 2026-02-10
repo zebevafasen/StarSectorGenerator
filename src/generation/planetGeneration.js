@@ -14,7 +14,7 @@ import { hashToUnit } from '../utils/rng';
 import { pickWeighted } from '../utils/weightedPicker';
 import { PLANET_GENERATION } from './generationConstants';
 
-const { MAX_PLANETS, MAX_INHABITATED_PLANETS, POPULATION = {} } = systemGenerationConfig;
+const { MAX_PLANETS, MAX_INHABITATED_PLANETS, POPULATION = {}, CORE_SYSTEM_SETTINGS = {} } = systemGenerationConfig;
 
 const createPlanetCountWeights = (maxPlanets, center = PLANET_GENERATION.CENTER_PEAK) => {
   const sigma = PLANET_GENERATION.SIGMA;
@@ -26,14 +26,18 @@ const createPlanetCountWeights = (maxPlanets, center = PLANET_GENERATION.CENTER_
 
 const PLANET_COUNT_WEIGHTS = createPlanetCountWeights(MAX_PLANETS);
 
-const getRandomPlanetSize = (seed, planetType) => {
+const getRandomPlanetSize = (seed, planetType, isCoreWorld = false) => {
   const planetData = getPlanetByType(planetType);
   const sizeModifiers = planetData?.data?.sizeModifier || {};
 
-  const sizeConfigs = planetSizes.map((size) => ({
-    ...size,
-    weight: (size.weight || 0) * (sizeModifiers[size.name] ?? 1)
-  }));
+  const sizeConfigs = planetSizes.map((size) => {
+    let weight = (size.weight || 0) * (sizeModifiers[size.name] ?? 1);
+    // Phase Three: Bias towards larger worlds for the Core world
+    if (isCoreWorld && (size.name === 'Large' || size.name === 'Massive')) {
+      weight *= 2;
+    }
+    return { ...size, weight };
+  });
 
   const picked = pickWeighted(sizeConfigs, (s) => s.weight, hashToUnit(seed));
   return picked?.name || 'Medium';
@@ -76,7 +80,7 @@ const ensureHabitablePlanetWhenPossible = (bodies, stars, seedBase) => {
 const isInhabitableCandidate = (body) =>
   body?.habitable === true && Number(body?.habitabilityRate ?? 0) > 0;
 
-const assignInhabitationStatus = (bodies, seedBase) => {
+const assignInhabitationStatus = (bodies, seedBase, isCoreSystem = false) => {
   if (!bodies?.length) return [];
 
   const inhabitablePlanetIndices = bodies
@@ -97,11 +101,19 @@ const assignInhabitationStatus = (bodies, seedBase) => {
   const primaryIndex = shuffledHabitable.shift();
   result[primaryIndex].isInhabited = true;
   result[primaryIndex].isPrimaryInhabited = true;
+  // Phase Three: Tag the primary world of a Core System
+  if (isCoreSystem) {
+    result[primaryIndex].isCoreWorld = true;
+  }
 
   let inhabitedCount = 1;
   for (const planetIndex of shuffledHabitable) {
     if (inhabitedCount >= MAX_INHABITATED_PLANETS) break;
-    const chance = (POPULATION.CHANCE ?? 0.3) / inhabitedCount;
+    
+    // Phase Three: Higher chance of multiple inhabited planets in Core Systems
+    const baseChance = isCoreSystem ? 0.8 : (POPULATION.CHANCE ?? 0.3);
+    const chance = baseChance / inhabitedCount;
+    
     if (hashToUnit(`${seedBase}:inhabited_chance:${planetIndex}`) < chance) {
       result[planetIndex].isInhabited = true;
       inhabitedCount++;
@@ -208,14 +220,17 @@ const applyNaming = (bodies, seedBase) => {
   });
 };
 
-export const generatePlanetBodiesForStar = (star, rng, maxPlanets = MAX_PLANETS) => {
+export const generatePlanetBodiesForStar = (star, rng, maxPlanets = MAX_PLANETS, isCoreSystem = false) => {
   if (!star || ['Black Hole', 'Neutron'].includes(star.type)) {
     return [];
   }
 
-  const weights = star.data?.planetTypeWeights;
-  if (!weights) {
-    return [];
+  const weights = { ...(star.data?.planetTypeWeights || {}) };
+  
+  // Phase Three: Bias towards Terrestrial/Oceanic for Core Systems
+  if (isCoreSystem) {
+    if (weights['Terrestrial'] !== undefined) weights['Terrestrial'] *= 3;
+    if (weights['Oceanic'] !== undefined) weights['Oceanic'] *= 2;
   }
 
   const planetTypes = Object.keys(weights).map(type => ({ type, weight: weights[type] }));
@@ -235,38 +250,45 @@ export const generatePlanetBodiesForStar = (star, rng, maxPlanets = MAX_PLANETS)
     });
   }
 
+  // Phase Three: Force at least one Terrestrial if Core System and star allows
+  if (isCoreSystem && !bodies.some(b => b.type === 'Terrestrial') && weights['Terrestrial'] > 0) {
+    if (bodies.length > 0) {
+      bodies[0].type = 'Terrestrial';
+    } else {
+      bodies.push({ name: '', type: 'Terrestrial' });
+    }
+  }
+
   return bodies;
 };
 
-const calculatePopulation = (body, seedBase) => {
+const calculatePopulation = (body, seedBase, isCoreSystem = false) => {
   if (!body.isInhabited) return 0;
 
   const sizeInfo = planetSizes.find((s) => s.name === body.size);
   const sizeFactor = sizeInfo?.populationFactor ?? 1.0;
   
-  // Base population calculation: 1 Billion * sizeFactor * habitability
-  // We use a base of 1 billion for a Medium, perfectly habitable world.
   const basePop = PLANET_GENERATION.BASE_POPULATION;
   let finalPop = basePop * sizeFactor * (body.habitabilityRate || 0.1);
 
-  // Apply Tag Overrides and Modifiers
+  // Phase Three: Massive population spike for Core Systems
+  if (isCoreSystem) {
+    finalPop *= (CORE_SYSTEM_SETTINGS.POPULATION_MULTIPLIER || 8.0);
+  }
+
   const tags = body.tags || [];
-  
-  // 1. Check for Range Overrides (highest precedence)
   const rangeOverride = tags.find(t => t.populationRange);
   if (rangeOverride) {
     const { min, max } = rangeOverride.populationRange;
     const roll = hashToUnit(`${seedBase}:pop_roll`);
     finalPop = Math.floor(roll * (max - min + 1)) + min;
   } else {
-    // 2. Apply Multipliers
     tags.forEach(tag => {
       if (tag.populationModifier) {
         finalPop *= tag.populationModifier;
       }
     });
     
-    // Add some random variance (+/- 20%) if not overridden by a range
     const variance = PLANET_GENERATION.POPULATION_VARIANCE_BASE + (hashToUnit(`${seedBase}:pop_variance`) * PLANET_GENERATION.POPULATION_VARIANCE_RANGE);
     finalPop *= variance;
   }
@@ -274,31 +296,32 @@ const calculatePopulation = (body, seedBase) => {
   return Math.floor(finalPop);
 };
 
-/**
- * Processing Pipeline:
- * 1. Environment: Assigns basic habitability, atmosphere, and temperature.
- * 2. Inhabitation: Determines if planets are inhabited based on habitability.
- * 3. Tags: Assigns tags (e.g., "Colony", "Industrial") based on planet stats.
- * 4. Logic: Enforces rules like "Colony worlds are the only inhabited ones".
- * 5. Naming: Assigns names to bodies.
- * 6. Population: Calculates final population.
- */
-export const processPlanetBodies = ({ bodies, stars, seedBase }) => {
+export const processPlanetBodies = ({ bodies, stars, seedBase, isCoreSystem = false }) => {
   let nextBodies = bodies;
   nextBodies = ensureHabitablePlanetWhenPossible(nextBodies, stars, seedBase);
+  
   const bodiesWithEnvironment = nextBodies?.map((body, index) => {
     const planetInfo = getPlanetByType(body.type);
     const planetStats = planetInfo?.data || {};
-    const atmosphereName = pickAtmosphereName(
-      `${seedBase}:body:${index}:atmosphere`,
-      planetStats.atmosphereWeight || {},
-      planetStats.atmospheres || []
-    );
-    const temperatureName = pickTemperatureName(
-      `${seedBase}:body:${index}:temperature`,
-      planetStats.temperatureWeight || {},
-      planetStats.temperatures || []
-    );
+    
+    // Phase Three: Ideal environment for Core Worlds
+    const isPrimaryCoreWorld = isCoreSystem && index === 0 && body.type === 'Terrestrial';
+
+    const atmosphereName = isPrimaryCoreWorld 
+      ? "Breathable" 
+      : pickAtmosphereName(
+          `${seedBase}:body:${index}:atmosphere`,
+          planetStats.atmosphereWeight || {},
+          planetStats.atmospheres || []
+        );
+
+    const temperatureName = isPrimaryCoreWorld 
+      ? "Temperate" 
+      : pickTemperatureName(
+          `${seedBase}:body:${index}:temperature`,
+          planetStats.temperatureWeight || {},
+          planetStats.temperatures || []
+        );
 
     const atmosphere = getAtmosphereByName(atmosphereName);
     const temperature = getTemperatureByName(temperatureName);
@@ -309,7 +332,7 @@ export const processPlanetBodies = ({ bodies, stars, seedBase }) => {
 
     return {
       ...body,
-      size: getRandomPlanetSize(`${seedBase}:body:${index}:size`, body.type),
+      size: getRandomPlanetSize(`${seedBase}:body:${index}:size`, body.type, isPrimaryCoreWorld),
       atmosphere: atmosphereName || null,
       temperature: temperatureName || null,
       habitabilityRate,
@@ -320,13 +343,13 @@ export const processPlanetBodies = ({ bodies, stars, seedBase }) => {
     };
   });
 
-  const withInhabitants = assignInhabitationStatus(bodiesWithEnvironment, seedBase);
+  const withInhabitants = assignInhabitationStatus(bodiesWithEnvironment, seedBase, isCoreSystem);
   const withTags = assignPlanetTags(withInhabitants, seedBase);
   const logicApplied = enforceSystemLogic(withTags);
   const named = applyNaming(logicApplied, seedBase);
 
   return named.map((body, index) => ({
     ...body,
-    population: calculatePopulation(body, `${seedBase}:body:${index}:pop`)
+    population: calculatePopulation(body, `${seedBase}:body:${index}:pop`, isCoreSystem)
   }));
 };

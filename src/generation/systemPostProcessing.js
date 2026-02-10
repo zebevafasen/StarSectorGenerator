@@ -18,11 +18,13 @@ export const postProcessSystems = (systems) =>
 
       const stars = system.stars ? [...system.stars] : (system.star ? [system.star] : []);
       const seedBase = `${coords}|${system.baseName || system.name || system.star?.name || 'system'}`;
+      const isCoreSystem = Boolean(system.isCore);
 
       const bodiesWithSize = processPlanetBodies({
         bodies: system.bodies,
         stars,
-        seedBase
+        seedBase,
+        isCoreSystem
       });
 
       const starsWithCompanions = appendCompanionStars({

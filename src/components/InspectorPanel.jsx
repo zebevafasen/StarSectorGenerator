@@ -55,7 +55,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
           </div>
           <div className="flex items-center gap-2">
             <Star size={16} />
-            <span>{Object.keys(systems).length} Systems</span>
+            <span>{Object.keys(systems).length} Objects</span>
           </div>
         </div>
       </div>

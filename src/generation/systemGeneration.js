@@ -84,17 +84,24 @@ const assignPrimaryStarAge = (system, selectedStar, rng) => {
   system.star.ageUnit = 'Unknown';
 };
 
-export const generateSystemAtCoordinate = ({ q, r, rng, systemsByCoord, pickStar, sectorQ, sectorR }) => {
+export const generateSystemAtCoordinate = ({ q, r, rng, systemsByCoord, pickStar, sectorQ, sectorR, isCore = false }) => {
   const selectedStar = pickStar(rng);
 
   const system = {
+    isCore,
     star: {
       type: selectedStar.type
     },
-    bodies: generatePlanetBodiesForStar(selectedStar, rng)
+    bodies: generatePlanetBodiesForStar(selectedStar, rng, undefined, isCore)
   };
 
   assignPrimaryStarAge(system, selectedStar, rng);
+  
+  // Phase Three: Star Age Boost for Core Systems
+  if (isCore && system.star.age !== undefined) {
+    system.star.age = parseFloat((system.star.age * 1.5).toFixed(2));
+  }
+
   const prefix = buildSystemNamePrefix({ q, r, rng, systemsByCoord });
   assignSystemNames(system, rng, prefix);
   assignPlanetSequenceNames(system, rng);

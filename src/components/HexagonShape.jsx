@@ -63,6 +63,20 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
         />
       )}
 
+      {hasSystem && systemData?.isCore && (
+        <circle
+          cx="0"
+          cy="0"
+          r={HEX_SIZE * 0.6}
+          fill="none"
+          stroke="#f59e0b"
+          strokeWidth="1"
+          strokeDasharray="4 2"
+          className="pointer-events-none opacity-40 animate-spin-slow"
+          style={{ animationDuration: '20s' }}
+        />
+      )}
+
       {hasSystem && systemData?.bodies?.some(b => b.tags?.some(t => t.name === "Planetary Rings")) && (
         <ellipse
           cx="0"
