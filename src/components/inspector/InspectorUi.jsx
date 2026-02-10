@@ -107,3 +107,38 @@ export function InfoItem({ icon, label, value, subValue, colorClass }) {
   );
 }
 
+export function InspectorSection({ 
+  icon, 
+  title, 
+  count, 
+  expanded, 
+  onToggle, 
+  children, 
+  emptyMessage = "No items detected." 
+}) {
+  const hasItems = count > 0;
+  
+  return (
+    <div>
+      <SectionToggleButton
+        icon={icon}
+        label={`${title} (${count})`}
+        isExpanded={expanded}
+        onToggle={onToggle}
+      />
+
+      {expanded && (
+        <SectionBody>
+          {hasItems ? (
+            <div className="space-y-2">
+              {children}
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500 italic text-center py-2">{emptyMessage}</div>
+          )}
+        </SectionBody>
+      )}
+    </div>
+  );
+}
+

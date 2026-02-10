@@ -1,0 +1,29 @@
+export const PLANET_GENERATION = {
+  SIGMA: 1.6,
+  CENTER_PEAK: 3,
+  TAG_COUNT_THRESHOLD: 0.7,
+  BASE_POPULATION: 1_000_000_000,
+  POPULATION_VARIANCE_BASE: 0.8,
+  POPULATION_VARIANCE_RANGE: 0.4,
+  DEFAULT_SECONDARY_NAME: 'Outpost'
+};
+
+export const SYSTEM_GENERATION = {
+  DEFAULT_BINARY_CHANCE: 0.15,
+  DEFAULT_TRINARY_CHANCE: 0.1,
+  DEFAULT_AGE_UNIT: 'B Years'
+};
+
+export const STATION_GENERATION = {
+  TRAIT_COUNT_THRESHOLD: 0.8,
+  DEFAULT_FALLBACK_NAME: 'Outpost',
+  ALLEGIANCES: [
+    "Local System Govt",
+    "Mega-Corp",
+    "Independent League",
+    "Mercenary Company",
+    "Religious Sect",
+    "Private Enterprise",
+    "Pirate Syndicate"
+  ]
+};

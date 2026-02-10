@@ -16,99 +16,75 @@ export const DEFAULT_GENERATOR_SETTINGS = {
 };
 
 export function useSectorGenerator(onGenerate, initialSettings = {}) {
-  const [pendingGridSize, setPendingGridSize] = useState(initialSettings.pendingGridSize || DEFAULT_GENERATOR_SETTINGS.pendingGridSize);
-  const [densityMode, setDensityMode] = useState(initialSettings.densityMode || DEFAULT_GENERATOR_SETTINGS.densityMode);
-  const [densityPreset, setDensityPreset] = useState(initialSettings.densityPreset || DEFAULT_GENERATOR_SETTINGS.densityPreset);
-  const [manualCount, setManualCount] = useState(initialSettings.manualCount ?? DEFAULT_GENERATOR_SETTINGS.manualCount);
-  const [rangeLimits, setRangeLimits] = useState(initialSettings.rangeLimits || DEFAULT_GENERATOR_SETTINGS.rangeLimits);
-  const [distributionMode, setDistributionMode] = useState(initialSettings.distributionMode || DEFAULT_GENERATOR_SETTINGS.distributionMode);
-  const [seed, setSeed] = useState(() => initialSettings.seed || Math.random().toString(36).substring(7).toUpperCase());
-  const [autoGenerateSeed, setAutoGenerateSeed] = useState(initialSettings.autoGenerateSeed ?? DEFAULT_GENERATOR_SETTINGS.autoGenerateSeed);
+  const [settings, setSettings] = useState(() => ({
+    ...DEFAULT_GENERATOR_SETTINGS,
+    ...initialSettings,
+    seed: initialSettings.seed || Math.random().toString(36).substring(7).toUpperCase()
+  }));
 
   // Sync with initialSettings ONLY when they change from an external source (like Import)
   const [prevInitialSettings, setPrevInitialSettings] = useState(initialSettings);
 
   if (initialSettings !== prevInitialSettings) {
-    if (initialSettings.pendingGridSize) {
-      const next = initialSettings.pendingGridSize;
-      if (next.width !== pendingGridSize.width || next.height !== pendingGridSize.height) {
-        setPendingGridSize(next);
-      }
-    }
-    
-    if (initialSettings.densityMode !== undefined && initialSettings.densityMode !== densityMode) {
-      setDensityMode(initialSettings.densityMode);
-    }
-    
-    if (initialSettings.densityPreset !== undefined && initialSettings.densityPreset !== densityPreset) {
-      setDensityPreset(initialSettings.densityPreset);
-    }
-    
-    if (initialSettings.manualCount !== undefined && initialSettings.manualCount !== manualCount) {
-      setManualCount(initialSettings.manualCount);
-    }
-    
-    if (initialSettings.rangeLimits) {
-      const next = initialSettings.rangeLimits;
-      if (next.min !== rangeLimits.min || next.max !== rangeLimits.max) {
-        setRangeLimits(next);
-      }
-    }
-
-    if (initialSettings.distributionMode !== undefined && initialSettings.distributionMode !== distributionMode) {
-      setDistributionMode(initialSettings.distributionMode);
-    }
-    
-    if (initialSettings.seed !== undefined && initialSettings.seed !== seed) {
-      setSeed(initialSettings.seed);
-    }
-    
-    if (initialSettings.autoGenerateSeed !== undefined && initialSettings.autoGenerateSeed !== autoGenerateSeed) {
-      setAutoGenerateSeed(initialSettings.autoGenerateSeed);
-    }
-
+    setSettings(prev => ({
+      ...prev,
+      ...initialSettings,
+      // Ensure nested objects are handled correctly if partial updates are passed (though usually full objects)
+      pendingGridSize: initialSettings.pendingGridSize || prev.pendingGridSize,
+      rangeLimits: initialSettings.rangeLimits || prev.rangeLimits
+    }));
     setPrevInitialSettings(initialSettings);
   }
 
+  const updateSettings = useCallback((updates) => {
+    setSettings(prev => ({ ...prev, ...updates }));
+  }, []);
+
   const generate = useCallback(() => {
-    let currentSeed = seed;
-    if (autoGenerateSeed) {
+    let currentSeed = settings.seed;
+    if (settings.autoGenerateSeed) {
       currentSeed = Math.random().toString(36).substring(7).toUpperCase();
-      setSeed(currentSeed);
+      updateSettings({ seed: currentSeed });
     }
 
     const newSystems = generateSector({
+      ...settings,
       seed: currentSeed,
-      gridSize: pendingGridSize,
-      densityMode,
-      densityPreset,
-      manualCount,
-      rangeLimits,
-      distributionMode,
       sectorQ: 0,
       sectorR: 0
     });
 
-    onGenerate(newSystems, pendingGridSize);
-  }, [seed, autoGenerateSeed, pendingGridSize, densityMode, densityPreset, manualCount, rangeLimits, distributionMode, onGenerate]);
+    onGenerate(newSystems, settings.pendingGridSize);
+  }, [settings, onGenerate, updateSettings]);
 
   return {
-    pendingGridSize,
-    setPendingGridSize,
-    densityMode,
-    setDensityMode,
-    densityPreset,
-    setDensityPreset,
-    manualCount,
-    setManualCount,
-    rangeLimits,
-    setRangeLimits,
-    distributionMode,
-    setDistributionMode,
-    seed,
-    setSeed,
-    autoGenerateSeed,
-    setAutoGenerateSeed,
-    generate
+    // Expose individual properties for backward compatibility (or convenience)
+    pendingGridSize: settings.pendingGridSize,
+    setPendingGridSize: (val) => updateSettings({ pendingGridSize: typeof val === 'function' ? val(settings.pendingGridSize) : val }),
+    
+    densityMode: settings.densityMode,
+    setDensityMode: (val) => updateSettings({ densityMode: val }),
+    
+    densityPreset: settings.densityPreset,
+    setDensityPreset: (val) => updateSettings({ densityPreset: val }),
+    
+    manualCount: settings.manualCount,
+    setManualCount: (val) => updateSettings({ manualCount: typeof val === 'function' ? val(settings.manualCount) : val }),
+    
+    rangeLimits: settings.rangeLimits,
+    setRangeLimits: (val) => updateSettings({ rangeLimits: typeof val === 'function' ? val(settings.rangeLimits) : val }),
+    
+    distributionMode: settings.distributionMode,
+    setDistributionMode: (val) => updateSettings({ distributionMode: val }),
+    
+    seed: settings.seed,
+    setSeed: (val) => updateSettings({ seed: typeof val === 'function' ? val(settings.seed) : val }),
+    
+    autoGenerateSeed: settings.autoGenerateSeed,
+    setAutoGenerateSeed: (val) => updateSettings({ autoGenerateSeed: typeof val === 'function' ? val(settings.autoGenerateSeed) : val }),
+    
+    generate,
+    settings,
+    updateSettings
   };
 }

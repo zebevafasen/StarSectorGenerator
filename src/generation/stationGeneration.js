@@ -2,25 +2,15 @@ import namesData from '../data/names.json';
 import stationTraitsData from '../data/station_traits.json';
 import systemConfig from '../data/system_generation_config.json';
 import { hashToUnit } from '../utils/rng';
+import { STATION_GENERATION } from './generationConstants';
 
 const { MAX_STATIONS, STATIONS = {} } = systemConfig;
 const DEFAULT_STATION_BASE_CHANCE = 0.8;
 const DEFAULT_STATION_STEP_PENALTY = 0.25;
-const DEFAULT_STATION_FALLBACK_NAME = STATIONS.fallbackName || 'Outpost';
-
-const ALLEGIANCES = [
-  "Local System Govt",
-  "Mega-Corp",
-  "Independent League",
-  "Mercenary Company",
-  "Religious Sect",
-  "Private Enterprise",
-  "Pirate Syndicate"
-];
 
 const assignStationTraits = (station, seed) => {
   const tagCountRoll = hashToUnit(`${seed}:trait_count`);
-  const numTraits = tagCountRoll < 0.8 ? 1 : 2; // 80% for 1, 20% for 2
+  const numTraits = tagCountRoll < STATION_GENERATION.TRAIT_COUNT_THRESHOLD ? 1 : 2; 
 
   const selectedTraits = [];
   const available = [...stationTraitsData];
@@ -99,7 +89,7 @@ export const generateStations = ({ seedBase, hasInhabitedPlanet, stationsData })
     const prefixes = namesData[`${stationTypeKey}_PREFIXES`] || [];
     const suffixes = namesData[`${stationTypeKey}_SUFFIXES`] || [];
 
-    let newName = station.name || DEFAULT_STATION_FALLBACK_NAME;
+    let newName = station.name || STATION_GENERATION.DEFAULT_FALLBACK_NAME;
     if (prefixes.length > 0 && suffixes.length > 0) {
       const prefix = prefixes[Math.floor(hashToUnit(`${stationSeed}:name_prefix`) * prefixes.length)];
       const suffix = suffixes[Math.floor(hashToUnit(`${stationSeed}:name_suffix`) * suffixes.length)];
@@ -112,7 +102,7 @@ export const generateStations = ({ seedBase, hasInhabitedPlanet, stationsData })
 
     const traits = assignStationTraits(station, stationSeed);
     const population = calculateStationPopulation(station, traits, stationSeed);
-    const allegiance = ALLEGIANCES[Math.floor(hashToUnit(`${stationSeed}:allegiance`) * ALLEGIANCES.length)];
+    const allegiance = STATION_GENERATION.ALLEGIANCES[Math.floor(hashToUnit(`${stationSeed}:allegiance`) * STATION_GENERATION.ALLEGIANCES.length)];
 
     return { 
       ...station, 

@@ -12,12 +12,12 @@ import { getPlanetByType } from '../utils/planetUtils';
 import { getStarByType } from '../utils/starData';
 import { hashToUnit } from '../utils/rng';
 import { pickWeighted } from '../utils/weightedPicker';
+import { PLANET_GENERATION } from './generationConstants';
 
 const { MAX_PLANETS, MAX_INHABITATED_PLANETS, POPULATION = {} } = systemGenerationConfig;
-const DEFAULT_SECONDARY_PLANET_FALLBACK_NAME = 'Outpost';
 
-const createPlanetCountWeights = (maxPlanets, center = 3) => {
-  const sigma = 1.6;
+const createPlanetCountWeights = (maxPlanets, center = PLANET_GENERATION.CENTER_PEAK) => {
+  const sigma = PLANET_GENERATION.SIGMA;
   return Array.from({ length: maxPlanets + 1 }, (_, count) => {
     const exponent = -((count - center) ** 2) / (2 * sigma * sigma);
     return Math.exp(exponent) + 0.02;
@@ -127,7 +127,7 @@ const assignPlanetTags = (bodies, seedBase) => {
 
     const tagSeed = `${seedBase}:body:${index}:tags`;
     const tagCountRoll = hashToUnit(`${tagSeed}:count`);
-    const numTags = tagCountRoll < 0.7 ? 1 : 2;
+    const numTags = tagCountRoll < PLANET_GENERATION.TAG_COUNT_THRESHOLD ? 1 : 2;
 
     const selectedTags = [];
     let availableTags = [...possibleTags];
@@ -195,7 +195,7 @@ const applyNaming = (bodies, seedBase) => {
         namingStyle = chosenOption.style;
         secondaryNamePoolIndex++;
       } else {
-        newName = DEFAULT_SECONDARY_PLANET_FALLBACK_NAME;
+        newName = PLANET_GENERATION.DEFAULT_SECONDARY_NAME;
         namingStyle = 'suffix';
       }
     } else {
@@ -246,7 +246,7 @@ const calculatePopulation = (body, seedBase) => {
   
   // Base population calculation: 1 Billion * sizeFactor * habitability
   // We use a base of 1 billion for a Medium, perfectly habitable world.
-  const basePop = 1000000000;
+  const basePop = PLANET_GENERATION.BASE_POPULATION;
   let finalPop = basePop * sizeFactor * (body.habitabilityRate || 0.1);
 
   // Apply Tag Overrides and Modifiers
@@ -267,13 +267,22 @@ const calculatePopulation = (body, seedBase) => {
     });
     
     // Add some random variance (+/- 20%) if not overridden by a range
-    const variance = 0.8 + (hashToUnit(`${seedBase}:pop_variance`) * 0.4);
+    const variance = PLANET_GENERATION.POPULATION_VARIANCE_BASE + (hashToUnit(`${seedBase}:pop_variance`) * PLANET_GENERATION.POPULATION_VARIANCE_RANGE);
     finalPop *= variance;
   }
 
   return Math.floor(finalPop);
 };
 
+/**
+ * Processing Pipeline:
+ * 1. Environment: Assigns basic habitability, atmosphere, and temperature.
+ * 2. Inhabitation: Determines if planets are inhabited based on habitability.
+ * 3. Tags: Assigns tags (e.g., "Colony", "Industrial") based on planet stats.
+ * 4. Logic: Enforces rules like "Colony worlds are the only inhabited ones".
+ * 5. Naming: Assigns names to bodies.
+ * 6. Population: Calculates final population.
+ */
 export const processPlanetBodies = ({ bodies, stars, seedBase }) => {
   let nextBodies = bodies;
   nextBodies = ensureHabitablePlanetWhenPossible(nextBodies, stars, seedBase);

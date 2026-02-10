@@ -11,14 +11,15 @@ const { SECTOR_TEMPLATES, DENSITY_PRESETS } = generatorConfig;
 
 function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSettings, onSettingsChange, systems, gridSize, onImport }) {
   const {
-    pendingGridSize, setPendingGridSize,
-    densityMode, setDensityMode,
-    densityPreset, setDensityPreset,
-    manualCount, setManualCount,
-    rangeLimits, setRangeLimits,
-    distributionMode, setDistributionMode,
-    seed, setSeed,
-    autoGenerateSeed, setAutoGenerateSeed,
+    settings,
+    setPendingGridSize,
+    setDensityMode,
+    setDensityPreset,
+    setManualCount,
+    setRangeLimits,
+    setDistributionMode,
+    setSeed,
+    setAutoGenerateSeed,
     generate
   } = useSectorGenerator(onGenerate, initialSettings);
 
@@ -30,28 +31,10 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
   }, [autoGenerateOnMount, generate]);
 
   useEffect(() => {
-    if (!onSettingsChange) return;
-    onSettingsChange({
-      pendingGridSize,
-      densityMode,
-      densityPreset,
-      manualCount,
-      rangeLimits,
-      distributionMode,
-      seed,
-      autoGenerateSeed
-    });
-  }, [
-    pendingGridSize,
-    densityMode,
-    densityPreset,
-    manualCount,
-    rangeLimits,
-    distributionMode,
-    seed,
-    autoGenerateSeed,
-    onSettingsChange
-  ]);
+    if (onSettingsChange) {
+      onSettingsChange(settings);
+    }
+  }, [settings, onSettingsChange]);
 
   return (
     <aside 
@@ -77,7 +60,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
         <GeometrySection 
-          pendingGridSize={pendingGridSize} 
+          pendingGridSize={settings.pendingGridSize} 
           setPendingGridSize={setPendingGridSize} 
           templates={SECTOR_TEMPLATES} 
         />
@@ -85,26 +68,26 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
         <hr className="border-slate-800" />
 
         <DensitySection 
-          densityMode={densityMode}
+          densityMode={settings.densityMode}
           setDensityMode={setDensityMode}
-          densityPreset={densityPreset}
+          densityPreset={settings.densityPreset}
           setDensityPreset={setDensityPreset}
-          manualCount={manualCount}
+          manualCount={settings.manualCount}
           setManualCount={setManualCount}
-          rangeLimits={rangeLimits}
+          rangeLimits={settings.rangeLimits}
           setRangeLimits={setRangeLimits}
-          distributionMode={distributionMode}
+          distributionMode={settings.distributionMode}
           setDistributionMode={setDistributionMode}
-          pendingGridSize={pendingGridSize}
+          pendingGridSize={settings.pendingGridSize}
           presets={DENSITY_PRESETS}
         />
 
         <hr className="border-slate-800" />
 
         <SeedSection 
-          seed={seed}
+          seed={settings.seed}
           setSeed={setSeed}
-          autoGenerateSeed={autoGenerateSeed}
+          autoGenerateSeed={settings.autoGenerateSeed}
           setAutoGenerateSeed={setAutoGenerateSeed}
         />
 
@@ -113,16 +96,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
         <ExportSection 
           systems={systems} 
           gridSize={gridSize} 
-          generatorSettings={{
-            pendingGridSize,
-            densityMode,
-            densityPreset,
-            manualCount,
-            rangeLimits,
-            distributionMode,
-            seed,
-            autoGenerateSeed
-          }} 
+          generatorSettings={settings} 
           onImport={onImport} 
         />
       </div>
