@@ -1,0 +1,37 @@
+[
+    {
+    "name": "Navigation",
+    "color": "#399147",
+    "description": "Points of Interest that assist with navigation, such as beacons, relays, or landmarks that help travelers orient themselves in space."
+    },
+    {
+    "name": "Hazard",
+    "color": "#e53e3e",
+    "description": "Dangerous phenomena or locations that pose a risk to ships and crews, such as radiation storms, asteroid fields, or space anomalies."
+    },
+    {
+    "name": "Wreckage",
+    "color": "#718096",
+    "description": "Remnants of destroyed ships or stations, which may contain valuable salvage or clues about past events."
+    },
+    {
+    "name": "Resource",
+    "color": "#f59e0b",
+    "description": "Locations rich in valuable materials or resources that can be extracted or harvested."
+    },
+    {
+    "name": "Mystery",
+    "color": "#10b981",
+    "description": "Unexplained phenomena or locations that defy easy categorization, often shrouded in secrecy or intrigue."
+    },
+    {
+    "name": "Outpost",
+    "color": "#84cc16",
+    "description": "Small stations or settlements that serve as hubs for trade, rest, or information exchange."
+    },
+    {
+    "name": "Jump Gate",
+    "color": "#3f424a",
+    "description": "Massive structures that allow for instantaneous travel between two points in space. Their technology is highly advanced and not fully understood."
+    }
+]

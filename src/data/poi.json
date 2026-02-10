@@ -1,58 +1,84 @@
 [
   {
-    "type": "Nebula",
+    "type": "Hazard",
     "name": "Ionized Gas Cloud",
     "description": "A dense, shimmering nebula that interferes with long-range sensors and communication.",
-    "color": "#a855f7",
     "weight": 1.0
   },
   {
-    "type": "Anomaly",
+    "type": "Hazard",
     "name": "Gravity Well",
     "description": "A localized distortion in space-time that pulls on nearby vessels. Its origin is unknown.",
-    "color": "#ec4899",
     "weight": 0.8
   },
   {
     "type": "Wreckage",
     "name": "Ship Graveyard",
     "description": "The silent remains of a centuries-old space battle. Twisted hulls of massive cruisers drift in the void.",
-    "color": "#94a3b8",
     "weight": 0.6
-  },
-  {
-    "type": "Relic",
-    "name": "Precursor Array",
-    "description": "A massive, non-functional structure of alien design. It emits a faint, rhythmic hum.",
-    "color": "#22d3ee",
-    "weight": 0.5
   },
   {
     "type": "Resource",
     "name": "Rich Asteroid Field",
     "description": "A dense cluster of rocks rich in rare minerals. A beacon for mining corporations.",
-    "color": "#f59e0b",
     "weight": 1.2
   },
   {
-    "type": "Danger",
+    "type": "Hazard",
     "name": "Radiation Storm",
     "description": "A violent swirl of high-energy particles that makes transit extremely hazardous.",
-    "color": "#ef4444",
     "weight": 0.7
   },
   {
     "type": "Mystery",
     "name": "Ghost Signal",
     "description": "A repetitive, undecipherable signal originating from a point in deep space. No source is visible.",
-    "color": "#10b981",
     "weight": 0.9
   },
   {
     "type": "Outpost",
     "name": "Smuggler's Cache",
     "description": "A hidden stash of cargo containers, likely left by a criminal syndicate for later retrieval.",
-    "color": "#84cc16",
     "weight": 0.6
+  },
+  {
+    "type": "Navigation",
+    "name": "Relay Beacon",
+    "description": "A long-range communication relay that boosts signals across the sector. A critical piece of infrastructure.",
+    "risk": "Low",
+    "weight": 1.0
+  },
+  {
+    "type": "Navigation",
+    "name": "Ancient Lane Marker",
+    "description": "A relic from the early days of space exploration, this marker indicates a safe passage through a treacherous asteroid belt. Its origin is a mystery.",
+    "risk": "Unknown",
+    "weight": 0.8
+  },
+  {
+    "type": "Navigation",
+    "name": "Refueling Station",
+    "description": "A small outpost equipped with fuel tanks and basic repair facilities. A common stop for traders and travelers in need of a quick pit stop.",
+    "risk": "Low",
+    "weight": 0.4,
+    "isRefuelingStation": true
+  },
+    {
+    "type": "Jump-Gate",
+    "name": "Jump-Gate",
+    "description": "A massive structure that allows for instantaneous travel between two points in space. Its technology is highly advanced and not fully understood. This one appears to be active, with faint energy readings emanating from its core.",
+    "color": "#2563eb",
+    "risk": "High",
+    "weight": 0.1,
+    "state": "Active"
+  },
+  {
+    "type": "Jump-Gate",
+    "name": "Jump-Gate",
+    "description": "A massive structure that allows for instantaneous travel between two points in space. Its technology is highly advanced and not fully understood. This one appears to be dormant, with no signs of recent activity.",
+    "color": "#2563eb",
+    "risk": "Medium",
+    "weight": 0.2,
+    "state": "Inactive"
   }
 ]

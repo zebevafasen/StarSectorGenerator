@@ -7,7 +7,9 @@ import {
   Target, 
   HelpCircle,
   Gem,
-  Factory
+  Factory,
+  Compass,
+  Milestone
 } from 'lucide-react';
 
 const TYPE_ICONS = {
@@ -18,7 +20,11 @@ const TYPE_ICONS = {
   'Relic': Target,
   'Resource': Gem,
   'Outpost': Factory,
-  'Mystery': HelpCircle
+  'Mystery': HelpCircle,
+  'Navigation': Compass,
+  'Jump Gate': Milestone,
+  'Jump-Gate': Milestone,
+  'Hazard': Zap
 };
 
 const PoiIcon = ({ type, color, size = 16, inSvg = false }) => {
