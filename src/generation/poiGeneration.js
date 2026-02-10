@@ -50,8 +50,8 @@ const isGateOrigin = (universeSeed, sq, sr) => {
   const getPriority = (q, r) => {
     const rng = createRNG(stringToSeed(`${universeSeed}_gate_prio_${q}_${r}`));
     const roll = rng();
-    // 1.5% base chance to be an origin candidate
-    return roll < 0.015 ? roll : -1;
+    // 5.0% base chance to be an origin candidate (Increased from 1.5%)
+    return roll < 0.05 ? roll : -1;
   };
 
   const myPriority = getPriority(sq, sr);
