@@ -39,15 +39,20 @@ export const generatePOIAtCoordinate = (rng, q, r, sectorQ = 0, sectorR = 0) => 
     result.description = `${baseDescription} ${stateInfo}`;
 
     if (result.state === 'Active') {
-      // Pick a random neighbor sector as destination
-      const NEIGHBORS = [
-        { q: 1, r: 0 }, { q: 1, r: -1 }, { q: 0, r: -1 },
-        { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 }
-      ];
-      const offset = NEIGHBORS[Math.floor(rng() * NEIGHBORS.length)];
+      // Pick a more distant destination (2-5 sectors away)
+      const dist = Math.floor(rng() * 4) + 2;
+      const angle = rng() * Math.PI * 2;
+      
+      // Convert polar to axial-ish offsets
+      const dq = Math.round(Math.cos(angle) * dist);
+      const dr = Math.round(Math.sin(angle) * dist);
+      
+      // Ensure we don't jump to the same sector
+      const finalDq = dq === 0 && dr === 0 ? 1 : dq;
+
       result.destination = {
-        q: sectorQ + offset.q,
-        r: sectorR + offset.r
+        q: sectorQ + finalDq,
+        r: sectorR + dr
       };
     }
   }
