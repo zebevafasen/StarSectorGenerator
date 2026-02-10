@@ -36,15 +36,19 @@ export default function SectorNavigator({ onNavigate, sectorCoords, gridSize }) 
     });
   };
 
-  const gridWidth = gridSize.width * 1.5 * HEX_SIZE;
-  const gridHeight = gridSize.height * HEX_HEIGHT;
+  // Precise Grid Bounds Math
+  // Width: Span from center to center is (W-1)*1.5*S. Add full width of hex (2*S).
+  const actualWidth = (gridSize.width - 1) * 1.5 * HEX_SIZE + 2 * HEX_SIZE;
+  // Height: Base height is H*H. Odd-q columns shift down by 0.5*H.
+  const actualHeight = (gridSize.height + (gridSize.width > 1 ? 0.5 : 0)) * HEX_HEIGHT;
   
-  const midX = gridWidth / 2 + HEX_SIZE / 2;
-  const midY = gridHeight / 2;
+  const midX = actualWidth / 2;
+  const midY = actualHeight / 2;
 
   const tabW = 80;
-  const tabH = 35;
+  const tabH = 30;
   const iconSize = 24;
+  const gap = 4; // Tiny gap from the grid edge
 
   return (
     <g className="sector-navigator select-none">
@@ -52,8 +56,8 @@ export default function SectorNavigator({ onNavigate, sectorCoords, gridSize }) 
       <TabPolygon 
         title="Move North"
         onClick={() => handleNav(0, -1)}
-        points={`${midX-tabW/2},-2 ${midX+tabW/2},-2 ${midX+tabW/3},-${tabH} ${midX-tabW/3},-${tabH}`}
-        iconPos={{ x: midX - iconSize/2, y: -tabH + 5 }}
+        points={`${midX-tabW/2},-${gap} ${midX+tabW/2},-${gap} ${midX+tabW/3},-${tabH+gap} ${midX-tabW/3},-${tabH+gap}`}
+        iconPos={{ x: midX - iconSize/2, y: -tabH - gap + 4 }}
       >
         <ChevronUp size={iconSize} className="text-slate-500 group-hover:text-blue-400 transition-colors" />
       </TabPolygon>
@@ -62,8 +66,8 @@ export default function SectorNavigator({ onNavigate, sectorCoords, gridSize }) 
       <TabPolygon 
         title="Move South"
         onClick={() => handleNav(0, 1)}
-        points={`${midX-tabW/2},${gridHeight+2} ${midX+tabW/2},${gridHeight+2} ${midX+tabW/3},${gridHeight+tabH} ${midX-tabW/3},${gridHeight+tabH}`}
-        iconPos={{ x: midX - iconSize/2, y: gridHeight + 5 }}
+        points={`${midX-tabW/2},${actualHeight+gap} ${midX+tabW/2},${actualHeight+gap} ${midX+tabW/3},${actualHeight+tabH+gap} ${midX-tabW/3},${actualHeight+tabH+gap}`}
+        iconPos={{ x: midX - iconSize/2, y: actualHeight + gap + 4 }}
       >
         <ChevronDown size={iconSize} className="text-slate-500 group-hover:text-blue-400 transition-colors" />
       </TabPolygon>
@@ -72,8 +76,8 @@ export default function SectorNavigator({ onNavigate, sectorCoords, gridSize }) 
       <TabPolygon 
         title="Move West"
         onClick={() => handleNav(-1, 0)}
-        points={`-2,${midY-tabW/2} -2,${midY+tabW/2} -${tabH},${midY+tabW/3} -${tabH},${midY-tabW/3}`}
-        iconPos={{ x: -tabH + 5, y: midY - iconSize/2 }}
+        points={`-${gap},${midY-tabW/2} -${gap},${midY+tabW/2} -${tabH+gap},${midY+tabW/3} -${tabH+gap},${midY-tabW/3}`}
+        iconPos={{ x: -tabH - gap + 4, y: midY - iconSize/2 }}
       >
         <ChevronLeft size={iconSize} className="text-slate-500 group-hover:text-blue-400 transition-colors" />
       </TabPolygon>
@@ -82,8 +86,8 @@ export default function SectorNavigator({ onNavigate, sectorCoords, gridSize }) 
       <TabPolygon 
         title="Move East"
         onClick={() => handleNav(1, 0)}
-        points={`${gridWidth+HEX_SIZE+2},${midY-tabW/2} ${gridWidth+HEX_SIZE+2},${midY+tabW/2} ${gridWidth+HEX_SIZE+tabH},${midY+tabW/3} ${gridWidth+HEX_SIZE+tabH},${midY-tabW/3}`}
-        iconPos={{ x: gridWidth + HEX_SIZE + 5, y: midY - iconSize/2 }}
+        points={`${actualWidth+gap},${midY-tabW/2} ${actualWidth+gap},${midY+tabW/2} ${actualWidth+tabH+gap},${midY+tabW/3} ${actualWidth+tabH+gap},${midY-tabW/3}`}
+        iconPos={{ x: actualWidth + gap + 4, y: midY - iconSize/2 }}
       >
         <ChevronRight size={iconSize} className="text-slate-500 group-hover:text-blue-400 transition-colors" />
       </TabPolygon>
