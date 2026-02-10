@@ -6,15 +6,14 @@ import MapBackground from './starmap/MapBackground';
 
 export default function GalaxyMap({
   universe,
-  initialSectorCoords
+  initialSectorCoords,
+  onSectorSelect
 }) {
   const [viewState, setViewState] = useState({ scale: 0.3, x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const panZoomHandlers = usePanZoom(viewState, setViewState);
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   // Calculate sector offsets based on their Q,R coordinates
-  // We use a fixed stride for the galaxy view to keep things simple
-  // Assumes sectors use standard 8x10 or similar even grid widths
   const getSectorStride = (gridSize) => ({
     x: gridSize.width * 1.5 * HEX_SIZE,
     y: gridSize.height * HEX_HEIGHT
@@ -28,7 +27,7 @@ export default function GalaxyMap({
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
     if (Math.sqrt(dx * dx + dy * dy) < 5) {
-      // Future: Implement sector selection to jump back to Local View
+      // Background click
     }
   };
 
@@ -55,7 +54,7 @@ export default function GalaxyMap({
     <div className="flex-1 relative bg-slate-950 overflow-hidden cursor-move w-full h-full">
       <MapBackground viewState={viewState} />
       
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 bg-slate-900/60 backdrop-blur-sm border border-slate-800 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest text-slate-400 font-bold shadow-2xl">
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 bg-slate-900/60 backdrop-blur-sm border border-slate-800 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest text-slate-400 font-bold shadow-2xl pointer-events-none">
         Explored Universe ({exploredSectors.length} Sectors)
       </div>
 
@@ -76,8 +75,16 @@ export default function GalaxyMap({
               const sectorOffsetY = sr * stride.y;
 
               return (
-                <g key={key} transform={`translate(${sectorOffsetX}, ${sectorOffsetY})`}>
-                  {/* Sector Background / Placeholder Grid */}
+                <g 
+                  key={key} 
+                  transform={`translate(${sectorOffsetX}, ${sectorOffsetY})`}
+                  className="cursor-pointer group/sector"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSectorSelect?.({ q: sq, r: sr });
+                  }}
+                >
+                  {/* Sector Background / Hover Effect */}
                   <rect 
                     width={stride.x} 
                     height={stride.y} 
@@ -86,7 +93,7 @@ export default function GalaxyMap({
                     stroke="white" 
                     strokeWidth="1" 
                     opacity="0.1" 
-                    className="pointer-events-none"
+                    className="transition-all group-hover/sector:fill-blue-500/5 group-hover/sector:opacity-30 group-hover/sector:stroke-blue-400 group-hover/sector:stroke-[3px]"
                   />
 
                   {/* Efficient background hex grid */}
@@ -120,7 +127,7 @@ export default function GalaxyMap({
                   <text
                     x={stride.x / 2}
                     y={-10}
-                    className="text-xs fill-slate-600 font-mono font-bold select-none pointer-events-none"
+                    className="text-xs fill-slate-600 font-mono font-bold select-none pointer-events-none transition-colors group-hover/sector:fill-blue-400"
                     textAnchor="middle"
                   >
                     [{sq}, {sr}]

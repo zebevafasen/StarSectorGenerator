@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Globe, Map as MapIcon } from 'lucide-react';
+import { Globe, Map as MapIcon, Home } from 'lucide-react';
 import { HEX_SIZE, HEX_HEIGHT, SIDEBAR_WIDTH } from './constants';
 import GeneratorPanel from './components/GeneratorPanel';
 import InspectorPanel from './components/InspectorPanel';
@@ -137,8 +137,18 @@ export default function App() {
 
   return (
     <div className="relative flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
-      {/* View Mode Toggle */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900 border border-slate-700 rounded-lg flex p-1 shadow-xl">
+      {/* View Mode Toggle & Home */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900 border border-slate-700 rounded-lg flex p-1 shadow-xl gap-1">
+        <button
+          onClick={() => handleJump({ q: 0, r: 0 })}
+          className="px-2 py-1 text-xs font-bold rounded bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all border border-slate-700"
+          title="Return to Sector [0,0]"
+        >
+          <Home size={14} />
+        </button>
+        
+        <div className="w-px h-full bg-slate-800 mx-1" />
+
         <button
           onClick={() => setViewMode('local')}
           className={`px-3 py-1 text-xs font-bold rounded flex items-center gap-2 transition-all ${viewMode === 'local' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
@@ -172,6 +182,7 @@ export default function App() {
         <GalaxyMap 
           universe={universe}
           initialSectorCoords={sectorCoords}
+          onSectorSelect={handleJump}
         />
       )}
 
