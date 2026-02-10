@@ -66,6 +66,18 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
     onGenerate(newSystems, settings.pendingGridSize);
   }, [settings, onGenerate]);
 
+  const regenerate = useCallback(() => {
+    const newSystems = generateSector({
+      ...settings,
+      gridSize: settings.pendingGridSize,
+      seed: settings.seed,
+      sectorQ: settings.sectorCoords.q,
+      sectorR: settings.sectorCoords.r
+    });
+
+    onGenerate(newSystems, settings.pendingGridSize);
+  }, [settings, onGenerate]);
+
   return {
     setPendingGridSize: (val) => setSettings(prev => ({ ...prev, pendingGridSize: typeof val === 'function' ? val(prev.pendingGridSize) : val })),
     setDensityMode: (val) => setSettings(prev => ({ ...prev, densityMode: val })),
@@ -77,6 +89,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
     setAutoGenerateSeed: (val) => setSettings(prev => ({ ...prev, autoGenerateSeed: typeof val === 'function' ? val(prev.autoGenerateSeed) : val })),
     
     generate,
+    regenerate,
     settings,
     updateSettings
   };
