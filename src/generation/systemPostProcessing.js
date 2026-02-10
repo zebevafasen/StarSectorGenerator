@@ -51,6 +51,7 @@ export const postProcessSystems = (systems) =>
         {
           ...system,
           isSystem: true,
+          isCore: isCoreSystem, // Explicitly preserve the flag
           stars: starsWithCompanions,
           bodies: bodiesWithSize || system.bodies,
           belts,
