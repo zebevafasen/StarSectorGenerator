@@ -38,19 +38,13 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
   }
 
   const updateSettings = useCallback((updates) => {
-    setSettings(prev => {
-      const hasChange = Object.entries(updates).some(([key, value]) => prev[key] !== value);
-      if (!hasChange) return prev;
-      return { ...prev, ...updates };
-    });
+    setSettings(prev => ({ ...prev, ...updates }));
   }, []);
 
   const generate = useCallback(() => {
     let currentSeed = settings.seed;
     if (settings.autoGenerateSeed) {
       currentSeed = Math.random().toString(36).substring(7).toUpperCase();
-      // We update the seed in state but use the new seed immediately for generation
-      updateSettings({ seed: currentSeed });
     }
 
     const newSystems = generateSector({
@@ -72,28 +66,28 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
   return {
     // Expose individual properties for backward compatibility (or convenience)
     pendingGridSize: settings.pendingGridSize,
-    setPendingGridSize: (val) => updateSettings({ pendingGridSize: typeof val === 'function' ? val(settings.pendingGridSize) : val }),
+    setPendingGridSize: (val) => setSettings(prev => ({ ...prev, pendingGridSize: typeof val === 'function' ? val(prev.pendingGridSize) : val })),
     
     densityMode: settings.densityMode,
-    setDensityMode: (val) => updateSettings({ densityMode: val }),
+    setDensityMode: (val) => setSettings(prev => ({ ...prev, densityMode: val })),
     
     densityPreset: settings.densityPreset,
-    setDensityPreset: (val) => updateSettings({ densityPreset: val }),
+    setDensityPreset: (val) => setSettings(prev => ({ ...prev, densityPreset: val })),
     
     manualCount: settings.manualCount,
-    setManualCount: (val) => updateSettings({ manualCount: typeof val === 'function' ? val(settings.manualCount) : val }),
+    setManualCount: (val) => setSettings(prev => ({ ...prev, manualCount: typeof val === 'function' ? val(prev.manualCount) : val })),
     
     rangeLimits: settings.rangeLimits,
-    setRangeLimits: (val) => updateSettings({ rangeLimits: typeof val === 'function' ? val(settings.rangeLimits) : val }),
+    setRangeLimits: (val) => setSettings(prev => ({ ...prev, rangeLimits: typeof val === 'function' ? val(prev.rangeLimits) : val })),
     
     distributionMode: settings.distributionMode,
-    setDistributionMode: (val) => updateSettings({ distributionMode: val }),
+    setDistributionMode: (val) => setSettings(prev => ({ ...prev, distributionMode: val })),
     
     seed: settings.seed,
-    setSeed: (val) => updateSettings({ seed: typeof val === 'function' ? val(settings.seed) : val }),
+    setSeed: (val) => setSettings(prev => ({ ...prev, seed: typeof val === 'function' ? val(prev.seed) : val })),
     
     autoGenerateSeed: settings.autoGenerateSeed,
-    setAutoGenerateSeed: (val) => updateSettings({ autoGenerateSeed: typeof val === 'function' ? val(settings.autoGenerateSeed) : val }),
+    setAutoGenerateSeed: (val) => setSettings(prev => ({ ...prev, autoGenerateSeed: typeof val === 'function' ? val(prev.autoGenerateSeed) : val })),
     
     generate,
     settings,
