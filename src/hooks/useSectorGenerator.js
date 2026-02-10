@@ -66,8 +66,8 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
     onGenerate(newSystems, settings.pendingGridSize, { q: 0, r: 0 }, true);
   }, [settings, onGenerate]);
 
-  const regenerate = useCallback(() => {
-    const coords = settings.sectorCoords;
+  const regenerate = useCallback((targetCoords) => {
+    const coords = targetCoords || settings.sectorCoords;
     const newSystems = generateSector({
       ...settings,
       gridSize: settings.pendingGridSize,

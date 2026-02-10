@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { HEX_SIZE, HEX_HEIGHT } from '../constants';
 import HexagonShape from './HexagonShape';
 import { usePanZoom } from '../hooks/usePanZoom';
@@ -12,12 +12,35 @@ export default function GalaxyMap({
   const [viewState, setViewState] = useState({ scale: 0.3, x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const panZoomHandlers = usePanZoom(viewState, setViewState);
   const dragStartRef = useRef({ x: 0, y: 0 });
+  const lastCenteredCoordsRef = useRef(null);
 
   // Calculate sector offsets based on their Q,R coordinates
   const getSectorStride = (gridSize) => ({
     x: gridSize.width * 1.5 * HEX_SIZE,
     y: gridSize.height * HEX_HEIGHT
   });
+
+  // Auto-center camera on the current sector when view mode is entered or jump happens
+  useEffect(() => {
+    const coords = initialSectorCoords || { q: 0, r: 0 };
+    const coordKey = `${coords.q},${coords.r}`;
+    
+    if (lastCenteredCoordsRef.current !== coordKey) {
+      const sectorData = universe[coordKey];
+      if (sectorData) {
+        const stride = getSectorStride(sectorData.gridSize);
+        const sectorCenterX = coords.q * stride.x + stride.x / 2;
+        const sectorCenterY = coords.r * stride.y + stride.y / 2;
+
+        setViewState(prev => ({
+          ...prev,
+          x: window.innerWidth / 2 - (sectorCenterX * prev.scale),
+          y: window.innerHeight / 2 - (sectorCenterY * prev.scale)
+        }));
+        lastCenteredCoordsRef.current = coordKey;
+      }
+    }
+  }, [initialSectorCoords, universe]);
 
   const handleMouseDownCapture = (e) => {
     dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -28,7 +51,6 @@ export default function GalaxyMap({
     const dy = e.clientY - dragStartRef.current.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-    // Only select if it was a quick click, not a drag/pan
     if (distance < 5) {
       onSectorSelect?.({ q, r });
     }
@@ -36,7 +58,6 @@ export default function GalaxyMap({
 
   const exploredSectors = useMemo(() => Object.entries(universe), [universe]);
 
-  // Helper to build a single path for an entire sector's background hexes
   const getSectorGridPath = (gridSize) => {
     let path = "";
     const h = HEX_HEIGHT / 2;
@@ -65,7 +86,6 @@ export default function GalaxyMap({
         className="w-full h-full"
         {...panZoomHandlers}
         onMouseDownCapture={handleMouseDownCapture}
-        onClick={handleMapClick}
       >
         <svg width="100%" height="100%">
           <g transform={`translate(${viewState.x}, ${viewState.y}) scale(${viewState.scale})`}>
@@ -82,12 +102,8 @@ export default function GalaxyMap({
                   key={key} 
                   transform={`translate(${sectorOffsetX}, ${sectorOffsetY})`}
                   className="cursor-pointer group/sector"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSectorClick(e, sq, sr);
-                  }}
+                  onClick={(e) => handleSectorClick(e, sq, sr)}
                 >
-                  {/* Sector Background / Hover Effect */}
                   <rect 
                     width={stride.x} 
                     height={stride.y} 
@@ -99,7 +115,6 @@ export default function GalaxyMap({
                     className="transition-all group-hover/sector:fill-blue-500/5 group-hover/sector:opacity-30 group-hover/sector:stroke-blue-400 group-hover/sector:stroke-[3px]"
                   />
 
-                  {/* Efficient background hex grid */}
                   <path 
                     d={getSectorGridPath(gridSize)} 
                     fill="none" 
@@ -109,7 +124,6 @@ export default function GalaxyMap({
                     className="pointer-events-none"
                   />
                   
-                  {/* Only render actual systems and POIs as full HexagonShapes */}
                   {Object.entries(systems).map(([coordKey, sys]) => {
                     if (!sys) return null;
                     const [q, r] = coordKey.split(',').map(Number);
@@ -126,7 +140,6 @@ export default function GalaxyMap({
                     );
                   })}
 
-                  {/* Sector Coordinate Label */}
                   <text
                     x={stride.x / 2}
                     y={-10}

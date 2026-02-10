@@ -32,7 +32,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
 
     // Check if coordinates have changed
     if (currentCoords && prevCoords && (currentCoords.q !== prevCoords.q || currentCoords.r !== prevCoords.r)) {
-      regenerate();
+      regenerate(currentCoords);
       prevSectorCoords.current = currentCoords;
     } else if (currentCoords && !prevCoords) {
         prevSectorCoords.current = currentCoords;
