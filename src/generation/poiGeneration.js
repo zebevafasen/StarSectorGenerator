@@ -23,9 +23,17 @@ export const generatePOIAtCoordinate = (rng, q, r) => {
     location: { q, r }
   };
 
-  // Dynamic naming for Jump-Gates based on state
+  // Dynamic naming and description for Jump-Gates based on state
   if ((result.type === 'Jump-Gate' || result.type === 'Jump Gate') && result.state) {
     result.name = `${result.state} Jump-Gate`;
+    
+    // Use the base description from the type and add a state-specific suffix
+    const baseDescription = typeDef.description || result.description;
+    const stateInfo = result.state === 'Active' 
+      ? "It hums with immense power, its internal rings spinning in a blur of light." 
+      : "It remains silent and dark, waiting for a key or command to reawaken.";
+    
+    result.description = `${baseDescription} ${stateInfo}`;
   }
 
   return result;
