@@ -32,15 +32,23 @@ const SystemStarIcon = ({
   finalRadius *= scale;
 
   if (mode === 'inspector') {
-    const iconSize = explicitRadius ? (explicitRadius * 2.5) : inspectorIconSize;
-    const center = iconSize / 2;
+    // Ensure the SVG box is large enough for the star + glow + blur
+    // Glow is radius * 1.3, we add extra margin for the blur filter (3px)
+    const margin = 8;
+    const requiredSize = (finalRadius * 1.3 * 2) + margin;
+    const center = requiredSize / 2;
     
     return (
       <div
-        className={className}
-        style={{ width: iconSize, height: iconSize, padding: '4px' }}
+        className={`flex items-center justify-center ${className}`}
+        style={{ width: requiredSize, height: requiredSize }}
       >
-        <svg width="100%" height="100%" viewBox={`0 0 ${iconSize} ${iconSize}`}>
+        <svg 
+          width={requiredSize} 
+          height={requiredSize} 
+          viewBox={`0 0 ${requiredSize} ${requiredSize}`}
+          className="overflow-visible"
+        >
           <StarIcon
             colors={colors}
             radius={finalRadius}

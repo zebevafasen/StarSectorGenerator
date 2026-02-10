@@ -3,18 +3,18 @@ import { getStarByType } from './starData';
 
 // Central mapping for star sizes to remove dependency on JSON values
 const STAR_SIZE_MAP = {
-  'O': { map: 1.0, inspector: 16, icon: 64 },
-  'B': { map: 0.9, inspector: 16, icon: 64 },
-  'A': { map: 0.8, inspector: 16, icon: 64 },
-  'F': { map: 0.75, inspector: 16, icon: 64 },
-  'G': { map: 0.6, inspector: 16, icon: 64 },
-  'K': { map: 0.55, inspector: 16, icon: 64 },
-  'M': { map: 0.5, inspector: 16, icon: 64 },
-  'Neutron': { map: 0.6, inspector: 16, icon: 64 },
-  'Black Hole': { map: 1.0, inspector: 16, icon: 64 }
+  'O': { map: 1.0, inspector: 24, icon: 80 },
+  'B': { map: 0.9, inspector: 22, icon: 80 },
+  'A': { map: 0.8, inspector: 20, icon: 80 },
+  'F': { map: 0.75, inspector: 19, icon: 80 },
+  'G': { map: 0.6, inspector: 18, icon: 80 },
+  'K': { map: 0.55, inspector: 17, icon: 80 },
+  'M': { map: 0.5, inspector: 16, icon: 80 },
+  'Neutron': { map: 0.6, inspector: 17, icon: 80 },
+  'Black Hole': { map: 1.0, inspector: 24, icon: 80 }
 };
 
-const DEFAULT_SIZE = { map: 0.6, inspector: 16, icon: 64 };
+const DEFAULT_SIZE = { map: 0.6, inspector: 18, icon: 80 };
 
 export const getStarVisual = (starType) => {
   const starInfo = getStarByType(starType);

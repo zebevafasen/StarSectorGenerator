@@ -37,19 +37,19 @@ export function StarSection({
         const accentColor = getMainColor(tooltipData.color);
 
         return (
-          <EntityCard
-            key={index}
-            onClick={() => onFocus?.({ type: 'star', data: star, tooltipData })}
-            leftIcon={
-              <SystemStarIcon
-                starType={star.type}
-                mode="inspector"
-                uid={`inspector-${index}`}
-                className="flex items-center justify-center shrink-0"
-              />
-            }
-            title={<div className="text-base font-bold text-blue-300">{star.name}</div>}
-            subtitle={
+                        <EntityCard
+                          key={index}
+                          onClick={() => onFocus?.({ type: 'star', data: star, tooltipData })}
+                          leftIcon={
+                            <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                              <SystemStarIcon
+                                starType={star.type}
+                                mode="inspector"
+                                uid={`inspector-${index}`}
+                              />
+                            </div>
+                          }
+                          title={<div className="text-base font-bold text-blue-300">{star.name}</div>}            subtitle={
               <div className="flex items-center gap-2">
                 <TooltipTag
                   color={accentColor}
@@ -101,13 +101,16 @@ export function PlanetsSection({
             ? `${body.name} ${systemName}`
             : `${systemName} ${body.name}`;
 
-        return (
-          <EntityCard
-            key={index}
-            onClick={() => onFocus?.({ type: 'planet', data: body, tooltipData })}
-            leftIcon={<PlanetIcon type={body.type} radius={12} className="shrink-0" />}
-            title={
-              <div className="flex items-center gap-1.5">
+                        return (
+                          <EntityCard
+                            key={index}
+                            onClick={() => onFocus?.({ type: 'planet', data: body, tooltipData })}
+                            leftIcon={
+                              <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                                <PlanetIcon type={body.type} radius={12} />
+                              </div>
+                            }
+                            title={              <div className="flex items-center gap-1.5">
                 {body.isInhabited && <Users size={12} className="text-green-400 shrink-0" title="Inhabited" />}
                 <span>{nameLabel}</span>
               </div>
@@ -177,19 +180,20 @@ export function StationsSection({
       {stations.map((station, index) => {
         const tooltipData = getStationTooltipData(station);
         return (
-          <EntityCard
-            key={index}
-            onClick={() => onFocus?.({ type: 'station', data: station, tooltipData })}
-            leftIcon={
-              <div 
-                className="p-1.5 rounded text-white shrink-0"
-                style={{ backgroundColor: station.color || '#1e3a8a' }}
-              >
-                <Satellite size={14} />
-              </div>
-            }
-            title={<span className="font-bold text-blue-200">{station.name}</span>}
-            subtitle={
+                            <EntityCard
+                              key={index}
+                              onClick={() => onFocus?.({ type: 'station', data: station, tooltipData })}
+                              leftIcon={
+                                <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                                  <div 
+                                    className="p-1.5 rounded text-white"
+                                    style={{ backgroundColor: station.color || '#1e3a8a' }}
+                                  >
+                                    <Satellite size={14} />
+                                  </div>
+                                </div>
+                              }
+                              title={<span className="font-bold text-blue-200">{station.name}</span>}            subtitle={
               <span className="text-[10px] text-blue-400 uppercase">
                 <TooltipTag
                   color={station.color || "#60a5fa"}

@@ -19,7 +19,7 @@ export default function StarDetailView({ object, systemName, onBack }) {
       />
 
       <DetailHero 
-        icon={<SystemStarIcon starType={star.type} mode="inspector" radius={32} />}
+        icon={<SystemStarIcon starType={star.type} mode="inspector" radius={36} />}
         title={`Class ${star.type} Star`}
         subtitle={`${star.age} ${star.ageUnit} Old`}
         color={accentColor}
