@@ -23,10 +23,11 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
     seed: initialSettings.seed || Math.random().toString(36).substring(7).toUpperCase()
   }));
 
-  // Sync with initialSettings ONLY when they change from an external source (like Import)
-  const [prevInitialSettings, setPrevInitialSettings] = useState(initialSettings);
+  // Render-time adjustment: Only sync if initialSettings actually changes values
+  const [prevInitialSettingsStr, setPrevInitialSettingsStr] = useState(() => JSON.stringify(initialSettings));
+  const currentInitialSettingsStr = JSON.stringify(initialSettings);
 
-  if (initialSettings !== prevInitialSettings && initialSettings !== settings) {
+  if (currentInitialSettingsStr !== prevInitialSettingsStr) {
     setSettings(prev => ({
       ...prev,
       ...initialSettings,
@@ -34,7 +35,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       rangeLimits: initialSettings.rangeLimits || prev.rangeLimits,
       sectorCoords: initialSettings.sectorCoords || prev.sectorCoords
     }));
-    setPrevInitialSettings(initialSettings);
+    setPrevInitialSettingsStr(currentInitialSettingsStr);
   }
 
   const updateSettings = useCallback((updates) => {
@@ -55,38 +56,24 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       sectorR: 0
     });
 
-    updateSettings({ 
-      seed: currentSeed, 
-      sectorCoords: { q: 0, r: 0 } 
-    });
+    // Update local state with the new seed and reset coords
+    setSettings(prev => ({
+      ...prev,
+      seed: currentSeed,
+      sectorCoords: { q: 0, r: 0 }
+    }));
 
     onGenerate(newSystems, settings.pendingGridSize);
-  }, [settings, onGenerate, updateSettings]);
+  }, [settings, onGenerate]);
 
   return {
-    // Expose individual properties for backward compatibility (or convenience)
-    pendingGridSize: settings.pendingGridSize,
     setPendingGridSize: (val) => setSettings(prev => ({ ...prev, pendingGridSize: typeof val === 'function' ? val(prev.pendingGridSize) : val })),
-    
-    densityMode: settings.densityMode,
     setDensityMode: (val) => setSettings(prev => ({ ...prev, densityMode: val })),
-    
-    densityPreset: settings.densityPreset,
     setDensityPreset: (val) => setSettings(prev => ({ ...prev, densityPreset: val })),
-    
-    manualCount: settings.manualCount,
     setManualCount: (val) => setSettings(prev => ({ ...prev, manualCount: typeof val === 'function' ? val(prev.manualCount) : val })),
-    
-    rangeLimits: settings.rangeLimits,
     setRangeLimits: (val) => setSettings(prev => ({ ...prev, rangeLimits: typeof val === 'function' ? val(prev.rangeLimits) : val })),
-    
-    distributionMode: settings.distributionMode,
     setDistributionMode: (val) => setSettings(prev => ({ ...prev, distributionMode: val })),
-    
-    seed: settings.seed,
     setSeed: (val) => setSettings(prev => ({ ...prev, seed: typeof val === 'function' ? val(prev.seed) : val })),
-    
-    autoGenerateSeed: settings.autoGenerateSeed,
     setAutoGenerateSeed: (val) => setSettings(prev => ({ ...prev, autoGenerateSeed: typeof val === 'function' ? val(prev.autoGenerateSeed) : val })),
     
     generate,
