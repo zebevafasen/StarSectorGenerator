@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { HEX_SIZE, HEX_HEIGHT } from '../constants';
 import HexagonShape from './HexagonShape';
 import MapContainer from './starmap/MapContainer';
@@ -10,6 +10,7 @@ export default function GalaxyMap({
 }) {
   const [viewState, setViewState] = useState({ scale: 0.3, x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [lastCenteredCoords, setLastCenteredCoords] = useState(null);
+  const dragStartRef = useRef({ x: 0, y: 0 });
   
   const currentCoords = initialSectorCoords || { q: 0, r: 0 };
   const coordKey = `${currentCoords.q},${currentCoords.r}`;
@@ -36,6 +37,21 @@ export default function GalaxyMap({
 
   const exploredSectors = useMemo(() => Object.entries(universe), [universe]);
 
+  const handleMouseDownCapture = (e) => {
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleSectorClick = (e, q, r) => {
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Only select if it was a quick click, not a drag/pan
+    if (distance < 5) {
+      onSectorSelect?.({ q, r });
+    }
+  };
+
   // Helper to build a single path for an entire sector's background hexes
   const getSectorGridPath = (gridSize) => {
     let path = "";
@@ -54,7 +70,11 @@ export default function GalaxyMap({
   };
 
   return (
-    <MapContainer viewState={viewState} setViewState={setViewState}>
+    <MapContainer 
+      viewState={viewState} 
+      setViewState={setViewState}
+      onMouseDownCapture={handleMouseDownCapture}
+    >
       <g className="galaxy-view-content">
         {exploredSectors.map(([key, sectorData]) => {
           const [sq, sr] = key.split(',').map(Number);
@@ -74,7 +94,7 @@ export default function GalaxyMap({
               className="cursor-pointer group/sector"
               onClick={(e) => {
                 e.stopPropagation();
-                onSectorSelect?.({ q: sq, r: sr });
+                handleSectorClick(e, sq, sr);
               }}
             >
               <rect 

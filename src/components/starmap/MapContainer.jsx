@@ -10,12 +10,16 @@ export default function MapContainer({
   setViewState, 
   children, 
   onBackgroundClick,
+  onMouseDownCapture,
   className = "" 
 }) {
   const panZoomHandlers = usePanZoom(viewState, setViewState);
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   const handleMouseDownCapture = (e) => {
+    // Call external capture if provided
+    onMouseDownCapture?.(e);
+    // Local capture for background clicks
     dragStartRef.current = { x: e.clientX, y: e.clientY };
   };
 
