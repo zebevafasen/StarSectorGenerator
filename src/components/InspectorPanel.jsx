@@ -17,7 +17,7 @@ import {
   BeltsAndFieldsSection
 } from './inspector/InspectorSections';
 
-function InspectorPanel({ systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject, onJump, sectorCoords }) {
+function InspectorPanel({ systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject, onJump, sectorCoords, style }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
 
   // Handle POI selection automatically when a POI hex is clicked
@@ -39,7 +39,10 @@ function InspectorPanel({ systems, selectedCoords, setSelectedCoords, focusedObj
   };
 
   return (
-    <aside className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 shadow-xl z-20">
+    <aside 
+      className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 shadow-xl z-20"
+      style={style}
+    >
       <div className="p-4 border-b border-slate-800 bg-slate-900">
         <div className="flex items-center justify-between text-sm text-slate-400">
           <div className="flex items-center gap-2">

@@ -36,8 +36,8 @@ export default function App() {
 
   const resetView = useCallback(
     (size = gridSize) => {
-      const sidebarWidth = (showLeftSidebar ? SIDEBAR_WIDTH : 0) + (showRightSidebar ? SIDEBAR_WIDTH : 0);
-      const centerX = (window.innerWidth - sidebarWidth) / 2;
+      // Center relative to entire viewport to prevent shifting when panels toggle
+      const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
       const gridPixelWidth = size.width * 1.5 * HEX_SIZE;
       const gridPixelHeight = size.height * HEX_HEIGHT;
@@ -48,7 +48,7 @@ export default function App() {
         y: centerY - gridPixelHeight / 2
       });
     },
-    [gridSize, showLeftSidebar, showRightSidebar, setViewState]
+    [gridSize, setViewState]
   );
 
   const handleSectorGenerated = useCallback(
@@ -77,21 +77,28 @@ export default function App() {
     resetView(data.gridSize);
   }, [setSystems, setGridSize, setGeneratorSettings, resetView]);
 
-  const generatorStyle = useMemo(() => ({ display: showLeftSidebar ? 'flex' : 'none' }), [showLeftSidebar]);
+  const generatorStyle = useMemo(() => ({ 
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 30,
+    transform: showLeftSidebar ? 'translateX(0)' : 'translateX(-100%)',
+    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  }), [showLeftSidebar]);
+
+  const inspectorStyle = useMemo(() => ({
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 30,
+    transform: showRightSidebar ? 'translateX(0)' : 'translateX(100%)',
+    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  }), [showRightSidebar]);
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
-      <GeneratorPanel
-        onGenerate={handleSectorGenerated}
-        style={generatorStyle}
-        autoGenerateOnMount={autoGenerateOnMount}
-        initialSettings={{ ...generatorSettings, sectorCoords }}
-        onSettingsChange={setGeneratorSettings}
-        systems={systems}
-        gridSize={gridSize}
-        onImport={handleImport}
-      />
-
+    <div className="relative h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
       <StarMap
         gridSize={gridSize}
         systems={systems}
@@ -107,18 +114,27 @@ export default function App() {
         onNavigate={handleJump}
       />
 
-      {showRightSidebar && (
-        <InspectorPanel
-          gridSize={gridSize}
-          systems={systems}
-          sectorCoords={sectorCoords}
-          selectedCoords={selectedCoords}
-          setSelectedCoords={handleCoordsChange}
-          focusedObject={focusedObject}
-          setFocusedObject={setFocusedObject}
-          onJump={handleJump}
-        />
-      )}
+      <GeneratorPanel
+        onGenerate={handleSectorGenerated}
+        style={generatorStyle}
+        autoGenerateOnMount={autoGenerateOnMount}
+        initialSettings={{ ...generatorSettings, sectorCoords }}
+        onSettingsChange={setGeneratorSettings}
+        systems={systems}
+        gridSize={gridSize}
+        onImport={handleImport}
+      />
+
+      <InspectorPanel
+        systems={systems}
+        sectorCoords={sectorCoords}
+        selectedCoords={selectedCoords}
+        setSelectedCoords={handleCoordsChange}
+        focusedObject={focusedObject}
+        setFocusedObject={setFocusedObject}
+        onJump={handleJump}
+        style={inspectorStyle}
+      />
     </div>
   );
 }
