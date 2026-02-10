@@ -98,7 +98,7 @@ export default function App() {
   }), [showRightSidebar]);
 
   return (
-    <div className="relative h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
+    <div className="relative flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
       <StarMap
         gridSize={gridSize}
         systems={systems}
