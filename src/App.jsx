@@ -103,6 +103,8 @@ export default function App() {
         setShowLeftSidebar={setShowLeftSidebar}
         showRightSidebar={showRightSidebar}
         setShowRightSidebar={setShowRightSidebar}
+        sectorCoords={sectorCoords}
+        onNavigate={handleJump}
       />
 
       {showRightSidebar && (

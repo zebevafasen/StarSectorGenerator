@@ -57,8 +57,13 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       ...settings,
       gridSize: settings.pendingGridSize,
       seed: currentSeed,
-      sectorQ: settings.sectorCoords.q,
-      sectorR: settings.sectorCoords.r
+      sectorQ: 0,
+      sectorR: 0
+    });
+
+    updateSettings({ 
+      seed: currentSeed, 
+      sectorCoords: { q: 0, r: 0 } 
     });
 
     onGenerate(newSystems, settings.pendingGridSize);

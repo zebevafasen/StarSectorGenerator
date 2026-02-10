@@ -3,6 +3,7 @@ import HexagonShape from './HexagonShape';
 import { usePanZoom } from '../hooks/usePanZoom';
 import SidebarToggle from './starmap/SidebarToggle';
 import MapBackground from './starmap/MapBackground';
+import SectorNavigator from './starmap/SectorNavigator';
 
 export default function StarMap({
   gridSize,
@@ -14,7 +15,9 @@ export default function StarMap({
   showLeftSidebar,
   setShowLeftSidebar,
   showRightSidebar,
-  setShowRightSidebar
+  setShowRightSidebar,
+  sectorCoords,
+  onNavigate
 }) {
   const panZoomHandlers = usePanZoom(viewState, setViewState);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -63,6 +66,11 @@ export default function StarMap({
         side="right" 
         isOpen={showRightSidebar} 
         onToggle={setShowRightSidebar} 
+      />
+
+      <SectorNavigator 
+        onNavigate={onNavigate} 
+        sectorCoords={sectorCoords} 
       />
 
       <MapBackground viewState={viewState} />
