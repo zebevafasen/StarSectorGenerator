@@ -13,17 +13,21 @@ const { CORE_SYSTEM_SETTINGS } = systemConfig;
  * Phase One: Macro-Placement
  * Deterministically calculates the "Landing Site" for early explorers.
  */
-export const calculateIdealCoreHex = (sq, sr, width, height) => {
+export const calculateIdealCoreHex = (sq, sr, width, height, seed) => {
   const midQ = Math.floor(width / 2);
   const midR = Math.floor(height / 2);
 
-  // Drift Logic: Drift towards expansion front (approx 30% of sector size)
-  // At [0,0] drift is zero.
+  // Drift Logic: Drift towards expansion front
   const driftQ = Math.sign(sq) * Math.min(Math.abs(sq), 3) * (width * 0.1);
   const driftR = Math.sign(sr) * Math.min(Math.abs(sr), 3) * (height * 0.1);
 
-  const targetQ = Math.max(0, Math.min(width - 1, Math.round(midQ + driftQ)));
-  const targetR = Math.max(0, Math.min(height - 1, Math.round(midR + driftR)));
+  // Phase One Variance: Add jitter based on the seed so it's not a perfect pattern
+  const jitterRng = createRNG(stringToSeed(`${seed}_core_jitter_${sq}_${sr}`));
+  const jitterQ = Math.floor(jitterRng() * 5) - 2; // -2 to +2
+  const jitterR = Math.floor(jitterRng() * 5) - 2; // -2 to +2
+
+  const targetQ = Math.max(0, Math.min(width - 1, Math.round(midQ + driftQ + jitterQ)));
+  const targetR = Math.max(0, Math.min(height - 1, Math.round(midR + driftR + jitterR)));
 
   return { q: targetQ, r: targetR };
 };
@@ -143,7 +147,7 @@ export const generateSector = ({
   const targetCount = calculateTargetCount(densityMode, densityPreset, manualCount, rangeLimits, totalHexes, rng, distributionMode);
 
   // Phase One: Calculate Core Hex
-  const coreHex = calculateIdealCoreHex(sectorQ, sectorR, gridSize.width, gridSize.height);
+  const coreHex = calculateIdealCoreHex(sectorQ, sectorR, gridSize.width, gridSize.height, seed);
 
   // Phase Two: Use Core-based clustering if enabled
   const coords = distributionMode === 'clustered' 
@@ -151,6 +155,19 @@ export const generateSector = ({
     : getShuffledCoordinates(gridSize.width, gridSize.height, rng);
 
   const pickStar = createWeightedStarPicker();
+
+  // Phase Three: Filtered picker for Core Systems (No Black Holes/Neutrons)
+  const pickCoreStar = (r) => {
+    let star = pickStar(r);
+    let attempts = 0;
+    // Keep rolling if we hit a banned type
+    while ((star.type === 'Black Hole' || star.type === 'Neutron') && attempts < 10) {
+      star = pickStar(r);
+      attempts++;
+    }
+    return star;
+  };
+
   const systemsByCoord = {};
 
   // Phase Two: System Guarantee for Core Hex
@@ -160,12 +177,13 @@ export const generateSector = ({
       r: coreHex.r,
       rng,
       systemsByCoord,
-      pickStar,
+      pickStar: pickCoreStar, // Use the safe picker
       sectorQ,
-      sectorR
+      sectorR,
+      isCore: true // Pass the flag to trigger Phase Three bending
     }),
     isSystem: true,
-    isCore: true // Phase Three: Flag for later bending
+    isCore: true // Preserve for UI
   };
 
   // 1. Check for Stable Network Gate

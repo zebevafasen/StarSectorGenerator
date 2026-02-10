@@ -10,12 +10,12 @@ export default function SelectionHeader({ selectedCoords, selectedSystem, onClea
     <div className="p-3 border-b border-slate-800 bg-slate-900">
       <div className="flex items-start justify-between gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-lg font-bold text-white leading-tight truncate">
+          <div className="flex items-center flex-wrap gap-2 mb-1">
+            <h2 className="text-lg font-bold text-white leading-tight truncate min-w-0">
               {selectedSystem ? (selectedSystem.name || (selectedSystem.isPOI ? 'Point of Interest' : 'Deep Space')) : 'Deep Space'}
             </h2>
             {isCore && (
-              <span className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-[9px] font-black text-amber-400 uppercase tracking-tighter shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+              <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-[9px] font-black text-amber-400 uppercase tracking-tighter shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                 <Crown size={10} fill="currentColor" /> Core System
               </span>
             )}

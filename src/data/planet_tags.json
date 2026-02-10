@@ -206,6 +206,25 @@
             "description": "The planet's immense mass creates a crushing gravitational pull, requiring specialized equipment or genetic adaptation for humans to survive.",
             "requirements": { "type": ["Huge", "Massive", "Terrestrial", "Volcanic"] },
             "populationModifier": 0.7
+        },
+        {
+            "name": "Regional Capital",
+            "description": "The administrative and political heart of the sector. A world of high-reaching spires, intense security, and immense historical significance.",
+            "requirements": { "isCoreWorld": true, "inhabited": true },
+            "populationModifier": 2.5,
+            "incompatibleTags": ["Abandoned Colony", "failed Colony", "Colony"]
+        },
+        {
+            "name": "Ancient Infrastructure",
+            "description": "The planet is crisscrossed with deep-level megastructures and utility networks dating back to the earliest days of expansion, most still flawlessly operational.",
+            "requirements": { "isCoreWorld": true },
+            "populationModifier": 1.2
+        },
+        {
+            "name": "Sector Archive",
+            "description": "Massive, climate-controlled databanks store the entire history and technical knowledge of the sector's development.",
+            "requirements": { "isCoreWorld": true, "inhabited": true },
+            "populationModifier": 1.1
         }
     ]
     
