@@ -16,6 +16,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
     densityPreset, setDensityPreset,
     manualCount, setManualCount,
     rangeLimits, setRangeLimits,
+    distributionMode, setDistributionMode,
     seed, setSeed,
     autoGenerateSeed, setAutoGenerateSeed,
     generate
@@ -36,6 +37,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
       densityPreset,
       manualCount,
       rangeLimits,
+      distributionMode,
       seed,
       autoGenerateSeed
     });
@@ -45,6 +47,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
     densityPreset,
     manualCount,
     rangeLimits,
+    distributionMode,
     seed,
     autoGenerateSeed,
     onSettingsChange
@@ -90,6 +93,8 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
           setManualCount={setManualCount}
           rangeLimits={rangeLimits}
           setRangeLimits={setRangeLimits}
+          distributionMode={distributionMode}
+          setDistributionMode={setDistributionMode}
           pendingGridSize={pendingGridSize}
           presets={DENSITY_PRESETS}
         />
@@ -114,6 +119,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSetting
             densityPreset,
             manualCount,
             rangeLimits,
+            distributionMode,
             seed,
             autoGenerateSeed
           }} 

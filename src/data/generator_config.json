@@ -25,7 +25,7 @@
     { "value": "packed", "label": "Packed (75%)", "rate": 0.75 }
   ],
   "GENERATION_WEIGHTS": {
-    "prefixClustering": 0.85,
+    "prefixClustering": 0.5,
     "systemSuffix": 0.7,
     "planetGreekNaming": 0.5
   }

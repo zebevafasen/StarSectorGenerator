@@ -1,6 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Download, Upload, Image as ImageIcon, Save } from 'lucide-react';
 import { downloadJSON, importJSON, downloadSVGAsPNG } from '../../utils/exportUtils';
+
+const RESOLUTIONS = [
+  { label: 'SD (1x)', scale: 1 },
+  { label: 'HD (2x)', scale: 2 },
+  { label: 'UHD (4x)', scale: 4 }
+];
 
 export default function ExportSection({ 
   systems, 
@@ -9,6 +15,7 @@ export default function ExportSection({
   onImport 
 }) {
   const fileInputRef = useRef(null);
+  const [exportScale, setExportScale] = useState(2); // Default to HD
 
   const handleExportJSON = () => {
     const data = {
@@ -23,8 +30,9 @@ export default function ExportSection({
   };
 
   const handleExportImage = () => {
-    const filename = `sector-map-${new Date().toISOString().slice(0, 10)}.png`;
-    downloadSVGAsPNG('star-map-svg', filename);
+    const res = RESOLUTIONS.find(r => r.scale === exportScale) || RESOLUTIONS[1];
+    const filename = `sector-map-${res.label.split(' ')[0]}-${new Date().toISOString().slice(0, 10)}.png`;
+    downloadSVGAsPNG('star-map-svg', filename, exportScale);
   };
 
   const handleImportClick = () => {
@@ -79,6 +87,21 @@ export default function ExportSection({
         accept=".json" 
         className="hidden" 
       />
+
+      <div className="space-y-2">
+        <label className="text-xs text-slate-400 block">Export Resolution</label>
+        <div className="flex bg-slate-800 p-1 rounded-lg">
+          {RESOLUTIONS.map((res) => (
+            <button
+              key={res.scale}
+              onClick={() => setExportScale(res.scale)}
+              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${exportScale === res.scale ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              {res.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <button
         onClick={handleExportImage}

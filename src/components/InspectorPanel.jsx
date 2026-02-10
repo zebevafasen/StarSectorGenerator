@@ -3,6 +3,8 @@ import { Map as MapIcon, Star, Info, Hexagon } from 'lucide-react';
 import { getHexId } from '../utils/helpers';
 import SelectionHeader from './inspector/SelectionHeader';
 import InspectorTooltip from './inspector/InspectorTooltip';
+import PlanetDetailView from './inspector/PlanetDetailView';
+import StarDetailView from './inspector/StarDetailView';
 import { useTooltip } from '../hooks/useTooltip';
 import {
   StarSection,
@@ -11,10 +13,12 @@ import {
   BeltsAndFieldsSection
 } from './inspector/InspectorSections';
 
-function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }) {
+function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
   const [expanded, setExpanded] = useState({ stars: true, planets: true, stations: true, beltsAndFields: true });
   const { tooltip, handleTooltipEnter, handleTooltipMove, handleTooltipLeave } = useTooltip();
+
+  const handleBackToSystem = () => setFocusedObject(null);
 
   return (
     <aside className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 shadow-xl z-20">
@@ -37,16 +41,37 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
         </h2>
       </div>
 
-      <SelectionHeader
-        selectedCoords={selectedCoords}
-        selectedSystem={selectedSystem}
-        onClear={() => setSelectedCoords(null)}
-      />
+      {!focusedObject && (
+        <SelectionHeader
+          selectedCoords={selectedCoords}
+          selectedSystem={selectedSystem}
+          onClear={() => setSelectedCoords(null)}
+        />
+      )}
 
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {selectedCoords ? (
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-            {selectedSystem ? (
+            {focusedObject ? (
+              focusedObject.type === 'planet' ? (
+                <PlanetDetailView 
+                  object={focusedObject} 
+                  systemName={selectedSystem.baseName || selectedSystem.name}
+                  onBack={handleBackToSystem} 
+                />
+              ) : focusedObject.type === 'star' ? (
+                <StarDetailView 
+                  object={focusedObject} 
+                  systemName={selectedSystem.baseName || selectedSystem.name}
+                  onBack={handleBackToSystem} 
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center p-8 opacity-50">
+                  <p>Detail view coming soon for {focusedObject.type}</p>
+                  <button onClick={handleBackToSystem} className="mt-4 text-blue-400 hover:text-blue-300 underline">Back to System</button>
+                </div>
+              )
+            ) : selectedSystem ? (
               <div className="space-y-4">
                 <StarSection
                   expanded={expanded.stars}
@@ -55,6 +80,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
                   onTooltipEnter={handleTooltipEnter}
                   onTooltipMove={handleTooltipMove}
                   onTooltipLeave={handleTooltipLeave}
+                  onFocus={setFocusedObject}
                 />
 
                 <PlanetsSection
@@ -64,6 +90,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
                   onTooltipEnter={handleTooltipEnter}
                   onTooltipMove={handleTooltipMove}
                   onTooltipLeave={handleTooltipLeave}
+                  onFocus={setFocusedObject}
                 />
 
                 <StationsSection
@@ -73,6 +100,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
                   onTooltipEnter={handleTooltipEnter}
                   onTooltipMove={handleTooltipMove}
                   onTooltipLeave={handleTooltipLeave}
+                  onFocus={setFocusedObject}
                 />
 
                 <BeltsAndFieldsSection

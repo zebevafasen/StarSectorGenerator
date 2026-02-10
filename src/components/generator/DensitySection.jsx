@@ -9,6 +9,7 @@ export default function DensitySection({
   densityPreset, setDensityPreset,
   manualCount, setManualCount,
   rangeLimits, setRangeLimits,
+  distributionMode, setDistributionMode,
   pendingGridSize,
   presets
 }) {
@@ -18,16 +19,34 @@ export default function DensitySection({
     <section className="space-y-3">
       <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Stellar Density</h3>
 
-      <div className="flex bg-slate-800 p-1 rounded-lg">
-        {['preset', 'manual', 'range'].map((mode) => (
-          <button
-            key={mode}
-            onClick={() => setDensityMode(mode)}
-            className={`flex-1 py-1 text-xs font-medium rounded capitalize transition-all ${densityMode === mode ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            {mode}
-          </button>
-        ))}
+      <div className="space-y-2">
+        <label className="text-xs text-slate-400 block mb-1">Distribution</label>
+        <div className="flex bg-slate-800 p-1 rounded-lg">
+          {['uniform', 'clustered'].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setDistributionMode(mode)}
+              className={`flex-1 py-1 text-xs font-medium rounded capitalize transition-all ${(distributionMode || 'uniform') === mode ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs text-slate-400 block mb-1">Count Strategy</label>
+        <div className="flex bg-slate-800 p-1 rounded-lg">
+          {['preset', 'manual', 'range'].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setDensityMode(mode)}
+              className={`flex-1 py-1 text-xs font-medium rounded capitalize transition-all ${densityMode === mode ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
       </div>
 
       {densityMode === 'preset' && (

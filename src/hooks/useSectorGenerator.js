@@ -10,6 +10,7 @@ export const DEFAULT_GENERATOR_SETTINGS = {
   densityPreset: 'standard',
   manualCount: DEFAULTS.MANUAL_COUNT,
   rangeLimits: DEFAULTS.RANGE,
+  distributionMode: 'uniform',
   seed: '',
   autoGenerateSeed: false
 };
@@ -20,6 +21,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
   const [densityPreset, setDensityPreset] = useState(initialSettings.densityPreset || DEFAULT_GENERATOR_SETTINGS.densityPreset);
   const [manualCount, setManualCount] = useState(initialSettings.manualCount ?? DEFAULT_GENERATOR_SETTINGS.manualCount);
   const [rangeLimits, setRangeLimits] = useState(initialSettings.rangeLimits || DEFAULT_GENERATOR_SETTINGS.rangeLimits);
+  const [distributionMode, setDistributionMode] = useState(initialSettings.distributionMode || DEFAULT_GENERATOR_SETTINGS.distributionMode);
   const [seed, setSeed] = useState(() => initialSettings.seed || Math.random().toString(36).substring(7).toUpperCase());
   const [autoGenerateSeed, setAutoGenerateSeed] = useState(initialSettings.autoGenerateSeed ?? DEFAULT_GENERATOR_SETTINGS.autoGenerateSeed);
 
@@ -42,6 +44,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       return (next && (next.min !== prev.min || next.max !== prev.max)) ? next : prev;
     });
 
+    setDistributionMode(prev => initialSettings.distributionMode !== undefined && initialSettings.distributionMode !== prev ? initialSettings.distributionMode : prev);
     setSeed(prev => initialSettings.seed !== undefined && initialSettings.seed !== prev ? initialSettings.seed : prev);
     setAutoGenerateSeed(prev => initialSettings.autoGenerateSeed !== undefined && initialSettings.autoGenerateSeed !== prev ? initialSettings.autoGenerateSeed : prev);
   }, [initialSettings]);
@@ -60,12 +63,13 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       densityPreset,
       manualCount,
       rangeLimits,
+      distributionMode,
       sectorQ: 0,
       sectorR: 0
     });
 
     onGenerate(newSystems, pendingGridSize);
-  }, [seed, autoGenerateSeed, pendingGridSize, densityMode, densityPreset, manualCount, rangeLimits, onGenerate]);
+  }, [seed, autoGenerateSeed, pendingGridSize, densityMode, densityPreset, manualCount, rangeLimits, distributionMode, onGenerate]);
 
   return {
     pendingGridSize,
@@ -78,6 +82,8 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
     setManualCount,
     rangeLimits,
     setRangeLimits,
+    distributionMode,
+    setDistributionMode,
     seed,
     setSeed,
     autoGenerateSeed,

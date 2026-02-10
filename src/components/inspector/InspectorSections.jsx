@@ -10,7 +10,15 @@ import { getAtmosphereByName, getTemperatureByName } from '../../utils/environme
 import { getPlanetByType } from '../../utils/planetUtils';
 import { SectionToggleButton, SectionBody, TooltipTag, EntityCard } from './InspectorUi';
 
-export function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
+export function StarSection({ 
+  expanded, 
+  onToggle, 
+  selectedSystem, 
+  onTooltipEnter, 
+  onTooltipMove, 
+  onTooltipLeave,
+  onFocus
+}) {
   const stars = selectedSystem.stars || [selectedSystem.star];
 
   return (
@@ -39,15 +47,19 @@ export function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter
             };
 
             return (
-              <div key={index} className={`bg-slate-800/50 p-0.5 rounded border border-slate-700/50 flex items-center gap-3 group hover:border-blue-500/30 transition-colors ${index > 0 ? 'mt-1' : ''}`}>
-                <SystemStarIcon
-                  starType={star.type}
-                  mode="inspector"
-                  uid={`inspector-${index}`}
-                  className="flex items-center justify-center shrink-0"
-                />
-                <div>
-                  <div className="text-base font-bold text-blue-300">{star.name}</div>
+              <EntityCard
+                key={index}
+                onClick={() => onFocus?.({ type: 'star', data: star, tooltipData })}
+                leftIcon={
+                  <SystemStarIcon
+                    starType={star.type}
+                    mode="inspector"
+                    uid={`inspector-${index}`}
+                    className="flex items-center justify-center shrink-0"
+                  />
+                }
+                title={<div className="text-base font-bold text-blue-300">{star.name}</div>}
+                subtitle={
                   <div className="flex items-center gap-2">
                     <TooltipTag
                       color={starAccentColor}
@@ -60,8 +72,8 @@ export function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter
                     </TooltipTag>
                     &middot; {star.age && <span className="text-[10px] text-slate-400 font-bold uppercase">Age: {star.age} {star.ageUnit || 'Billion Years'}</span>}
                   </div>
-                </div>
-              </div>
+                }
+              />
             );
           })}
         </SectionBody>
@@ -70,7 +82,15 @@ export function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter
   );
 }
 
-export function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
+export function PlanetsSection({ 
+  expanded, 
+  onToggle, 
+  selectedSystem, 
+  onTooltipEnter, 
+  onTooltipMove, 
+  onTooltipLeave,
+  onFocus
+}) {
   const sortedBodies = useMemo(() => {
     if (!selectedSystem?.bodies?.length) {
       return [];
@@ -82,8 +102,14 @@ export function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEn
 
       if (aIsPrimary) return -1;
       if (bIsPrimary) return 1;
+      
       if (a.isInhabited && !b.isInhabited) return -1;
       if (!a.isInhabited && b.isInhabited) return 1;
+
+      if (a.isInhabited && b.isInhabited) {
+        return (b.population || 0) - (a.population || 0);
+      }
+
       return 0;
     });
   }, [selectedSystem]);
@@ -137,6 +163,7 @@ export function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEn
                 return (
                   <EntityCard
                     key={index}
+                    onClick={() => onFocus?.({ type: 'planet', data: body, tooltipData })}
                     leftIcon={<PlanetIcon type={body.type} radius={12} className="shrink-0" />}
                     title={
                       <div className="flex items-center gap-1.5">
@@ -169,6 +196,18 @@ export function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEn
                         >
                           {body.size}
                         </TooltipTag>
+                        {body.isInhabited && body.population !== undefined && (
+                          <>
+                            <span className="text-slate-400"> &middot; </span>
+                            <span className="text-green-500/80">Pop: {
+                              body.population >= 1000000000 
+                                ? `${(body.population / 1000000000).toFixed(1)}B` 
+                                : body.population >= 1000000 
+                                  ? `${(body.population / 1000000).toFixed(1)}M` 
+                                  : body.population.toLocaleString()
+                            }</span>
+                          </>
+                        )}
                       </div>
                     }
                   />
@@ -184,7 +223,15 @@ export function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEn
   );
 }
 
-export function StationsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
+export function StationsSection({ 
+  expanded, 
+  onToggle, 
+  selectedSystem, 
+  onTooltipEnter, 
+  onTooltipMove, 
+  onTooltipLeave,
+  onFocus
+}) {
   const stations = selectedSystem?.stations || [];
 
   return (
@@ -200,35 +247,39 @@ export function StationsSection({ expanded, onToggle, selectedSystem, onTooltipE
         <SectionBody>
           {stations.length > 0 ? (
             <div className="space-y-2">
-              {stations.map((station, index) => (
-                <EntityCard
-                  key={index}
-                  leftIcon={
-                    <div className="p-1.5 bg-blue-900/50 rounded text-blue-300 shrink-0">
-                      <Satellite size={14} />
-                    </div>
-                  }
-                  title={<span className="font-bold text-blue-200">{station.name}</span>}
-                  subtitle={
-                    <span className="text-[10px] text-blue-400 uppercase">
-                      <TooltipTag
-                        color="#60a5fa"
-                        onTooltipEnter={onTooltipEnter}
-                        onTooltipMove={onTooltipMove}
-                        onTooltipLeave={onTooltipLeave}
-                        tooltipData={{
-                          name: station.name,
-                          type: station.type,
-                          description: station.description,
-                          isStation: true
-                        }}
-                      >
-                        {station.type}
-                      </TooltipTag>
-                    </span>
-                  }
-                />
-              ))}
+              {stations.map((station, index) => {
+                const tooltipData = {
+                  name: station.name,
+                  type: station.type,
+                  description: station.description,
+                  isStation: true
+                };
+                return (
+                  <EntityCard
+                    key={index}
+                    onClick={() => onFocus?.({ type: 'station', data: station, tooltipData })}
+                    leftIcon={
+                      <div className="p-1.5 bg-blue-900/50 rounded text-blue-300 shrink-0">
+                        <Satellite size={14} />
+                      </div>
+                    }
+                    title={<span className="font-bold text-blue-200">{station.name}</span>}
+                    subtitle={
+                      <span className="text-[10px] text-blue-400 uppercase">
+                        <TooltipTag
+                          color="#60a5fa"
+                          onTooltipEnter={onTooltipEnter}
+                          onTooltipMove={onTooltipMove}
+                          onTooltipLeave={onTooltipLeave}
+                          tooltipData={tooltipData}
+                        >
+                          {station.type}
+                        </TooltipTag>
+                      </span>
+                    }
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="text-sm text-slate-500 italic text-center py-2">No stations detected.</div>

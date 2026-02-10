@@ -40,6 +40,61 @@ const getShuffledCoordinates = (width, height, rng) => {
   return coords;
 };
 
+const getClusteredCoordinates = (width, height, rng) => {
+  const coords = [];
+  for (let q = 0; q < width; q++) {
+    for (let r = 0; r < height; r++) {
+      coords.push({ q, r });
+    }
+  }
+
+  // Reduce centers slightly (2-4) to allow for bigger gaps
+  const numCenters = Math.floor(rng() * 3) + 2;
+  const centers = [];
+  
+  // Increase minimum distance significantly (50% of the map size)
+  const minCenterDist = Math.max(width, height) * 0.5;
+
+  for (let i = 0; i < numCenters * 5; i++) { // More attempts to find distant spots
+    if (centers.length >= numCenters) break;
+    
+    const candidate = {
+      q: Math.floor(rng() * width),
+      r: Math.floor(rng() * height)
+    };
+
+    const tooClose = centers.some(c => {
+      const dq = c.q - candidate.q;
+      const dr = c.r - candidate.r;
+      return Math.sqrt(dq * dq + dr * dr) < minCenterDist;
+    });
+
+    if (!tooClose) {
+      centers.push(candidate);
+    }
+  }
+
+  const weightedCoords = coords.map(coord => {
+    let maxWeight = 0;
+    for (const center of centers) {
+      const dq = center.q - coord.q;
+      const dr = center.r - coord.r;
+      const dist = Math.sqrt(dq * dq + dr * dr);
+      
+      // Even sharper falloff (0.3^dist) makes the clusters extremely dense
+      // and the space between them much "emptier"
+      const weight = Math.pow(0.3, dist);
+      maxWeight = Math.max(maxWeight, weight);
+    }
+    return { coord, weight: maxWeight };
+  });
+
+  // Weighted sort
+  weightedCoords.sort((a, b) => (rng() * b.weight) - (rng() * a.weight));
+
+  return weightedCoords.map(item => item.coord);
+};
+
 export const generateSector = ({
   seed,
   gridSize,
@@ -47,6 +102,7 @@ export const generateSector = ({
   densityPreset,
   manualCount,
   rangeLimits,
+  distributionMode = 'uniform',
   sectorQ = 0,
   sectorR = 0
 }) => {
@@ -57,7 +113,10 @@ export const generateSector = ({
   const totalHexes = gridSize.width * gridSize.height;
   const targetCount = calculateTargetCount(densityMode, densityPreset, manualCount, rangeLimits, totalHexes, rng);
 
-  const coords = getShuffledCoordinates(gridSize.width, gridSize.height, rng);
+  const coords = distributionMode === 'clustered' 
+    ? getClusteredCoordinates(gridSize.width, gridSize.height, rng)
+    : getShuffledCoordinates(gridSize.width, gridSize.height, rng);
+
   const pickStar = createWeightedStarPicker();
   const systemsByCoord = {};
 

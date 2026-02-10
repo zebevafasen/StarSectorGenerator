@@ -39,9 +39,14 @@ export function TooltipTag({ children, color, onTooltipEnter, onTooltipMove, onT
   );
 }
 
-export function EntityCard({ leftIcon, title, subtitle }) {
+export function EntityCard({ leftIcon, title, subtitle, onClick }) {
+  const isClickable = Boolean(onClick);
+
   return (
-    <div className="bg-slate-800/50 p-2 rounded border border-slate-700/50 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
+    <div 
+      onClick={onClick}
+      className={`bg-slate-800/50 p-2 rounded border border-slate-700/50 flex items-center justify-between group transition-colors ${isClickable ? 'cursor-pointer hover:border-blue-500/50 hover:bg-slate-800' : 'hover:border-blue-500/30'}`}
+    >
       <div className="flex items-center gap-3">
         {leftIcon}
         <div>
@@ -49,6 +54,7 @@ export function EntityCard({ leftIcon, title, subtitle }) {
           {subtitle}
         </div>
       </div>
+      {isClickable && <ChevronRight size={14} className="text-slate-600 group-hover:text-blue-400 transition-colors" />}
     </div>
   );
 }

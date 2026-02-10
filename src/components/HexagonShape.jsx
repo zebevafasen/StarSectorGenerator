@@ -62,6 +62,20 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
         />
       )}
 
+      {hasSystem && systemData?.bodies?.some(b => b.tags?.some(t => t.name === "Planetary Rings")) && (
+        <ellipse
+          cx="0"
+          cy="0"
+          rx={HEX_SIZE * 0.7}
+          ry={HEX_SIZE * 0.2}
+          fill="none"
+          stroke="#94a3b8"
+          strokeWidth="1"
+          className="pointer-events-none opacity-30"
+          transform="rotate(-15)"
+        />
+      )}
+
       {hasSystem &&
         stars.map((star, index) => {
           const { xOffset, yOffset, scale } = getSystemStarLayout(stars.length, index);

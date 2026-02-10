@@ -18,6 +18,12 @@ export default function App() {
   } = useSession();
 
   const [selectedCoords, setSelectedCoords] = useState(null);
+  const [focusedObject, setFocusedObject] = useState(null);
+
+  const handleCoordsChange = useCallback((coords) => {
+    setSelectedCoords(coords);
+    setFocusedObject(null);
+  }, []);
 
   const resetView = useCallback(
     (size = gridSize) => {
@@ -81,7 +87,7 @@ export default function App() {
         gridSize={gridSize}
         systems={systems}
         selectedCoords={selectedCoords}
-        setSelectedCoords={setSelectedCoords}
+        setSelectedCoords={handleCoordsChange}
         viewState={viewState}
         setViewState={setViewState}
         showLeftSidebar={showLeftSidebar}
@@ -95,7 +101,9 @@ export default function App() {
           gridSize={gridSize}
           systems={systems}
           selectedCoords={selectedCoords}
-          setSelectedCoords={setSelectedCoords}
+          setSelectedCoords={handleCoordsChange}
+          focusedObject={focusedObject}
+          setFocusedObject={setFocusedObject}
         />
       )}
     </div>

@@ -1,0 +1,211 @@
+[
+  {
+    "name": "Abandoned Colony",
+    "description": "The ruins of a once-thriving settlement are scattered across the surface, now home only to ghosts and scavengers.",
+    "requirements": { "inhabited": false },
+    "incompatibleTags": ["Colony", "Ecumenopolis"]
+  },
+  {
+    "name": "Civil War",
+    "description": "Vicious factional conflict has torn this world apart, leaving its people desperate and its infrastructure in ruins.",
+    "requirements": { "inhabited": true },
+    "populationModifier": 0.5,
+    "incompatibleTags": ["Prison Planet"]
+  },
+  {
+    "name": "Hostile Life",
+    "description": "The local flora or fauna is extremely dangerous to human life, requiring constant vigilance.",
+    "requirements": { "habitable": true },
+    "populationModifier": 0.8,
+    "incompatibleTags": ["Pleasure World"]
+  },
+  {
+    "name": "Valuable Minerals",
+    "description": "The planet is rich in rare and valuable minerals, attracting mining corporations and prospectors.",
+    "requirements": {}
+  },
+  {
+    "name": "Research Outpost",
+    "description": "A small, dedicated team of scientists is here to study a unique planetary phenomenon.",
+    "requirements": { "inhabited": true },
+    "populationRange": { "min": 50, "max": 5000 }
+  },
+  {
+    "name": "Ice Mining",
+    "description": "Vast fields of frozen water or gases are being harvested for shipment to dryer worlds.",
+    "requirements": { "type": ["Arctic", "Gas Giant"] },
+    "populationModifier": 1.2
+  },
+  {
+    "name": "Forbidden Zone",
+    "description": "Certain areas of the planet are restricted by automated defense systems or ancient edicts.",
+    "requirements": {}
+  },
+  {
+    "name": "Ocean Cities",
+    "description": "Floating or underwater metropolises house the planet's entire population.",
+    "requirements": { "type": ["Oceanic"], "inhabited": true },
+    "populationModifier": 1.5
+  },
+  {
+    "name": "Ecumenopolis",
+    "description": "A world-spanning city where every square inch of the surface is covered in urban sprawl and industrial machinery.",
+    "requirements": { "inhabited": true, "habitable": true },
+    "populationRange": { "min": 50000000000, "max": 200000000000 },
+    "incompatibleTags": ["Abandoned Colony", "Colony", "Prison Planet", "Terraforming Project"]
+  },
+  {
+    "name": "Colony",
+    "description": "A recently established settlement focusing on growth and resource extraction.",
+    "requirements": { "inhabited": true },
+    "populationRange": { "min": 100000, "max": 10000000 }
+  },
+    {
+    "name": "Terraforming Project",
+    "description": "Ongoing efforts are being made to alter the planet's environment to make it more suitable for human habitation.",
+    "requirements": { "habitable": false },
+    "populationRange": { "min": 5000, "max": 5000000 },
+    "incompatibleTags": ["Ecumenopolis", "Prison Planet", "Abandoned Colony", "Colony", "Research Outpost", "Ice Mining", "Ocean Cities", "Civil War", "Hostile Life", "Valuable Minerals", "Forbidden Zone", "Pleasure World"]
+    },
+    {    
+    "name": "Pleasure World",
+    "description": "A popular tourist destination known for its entertainment, resorts, and recreational activities.",
+    "requirements": { "inhabited": true, "habitable": true },
+    "populationRange": { "min": 50000, "max": 20000000 },
+    "incompatibleTags": ["Hostile Life"]
+    },
+    {
+    "name": "Prison Planet",
+    "description": "A remote world used to incarcerate dangerous criminals, often with harsh environmental conditions.",
+    "requirements": { "inhabited": true, "type": ["Desert", "Barren", "Oceanic", "Arctic", "Volcanic"] },
+    "populationRange": { "min": 10000, "max": 1000000 },
+    "incompatibleTags": ["Ecumenopolis"]
+    },
+    {
+        "name": "Corporate Enclave",
+        "description": "A heavily fortified area controlled by a powerful corporation, often serving as a hub for business and industry.",
+        "requirements": { "inhabited": true },
+        "populationRange": { "min": 20000, "max": 5000000 },
+        "incompatibleTags": ["Abandoned Colony", "Prison Planet"]
+    },
+    {
+        "name": "Xeno Preserve",
+        "description": "A protected area dedicated to the study and conservation of alien flora and fauna.",
+        "requirements": { "habitable": true},
+        "populationRange": { "min": 1000, "max": 100000 },
+        "incompatibleTags": ["Forge World", "Ecumenopolis"]
+    },
+    {
+        "name": "Forge World",
+        "description": "An industrial powerhouse planet focused on manufacturing and heavy industry.",
+        "requirements": { "inhabited": true, "habitable": true },
+        "populationRange": { "min": 1000000, "max": 500000000 },
+        "incompatibleTags": ["Garden World", "Prison Planet"]
+    },
+    {
+        "name": "Terraforming Failure",
+        "description": "An attempted terraforming project that went awry, resulting in a hostile and unstable environment.",
+        "requirements": { "habitable": false },
+        "incompatibleTags": ["Terraforming Project", "Ecumenopolis", "Garden World"]
+    },
+    {
+        "name": "Garden World",
+        "description": "A lush, verdant planet teeming with plant life and diverse ecosystems, often used for agriculture and recreation.",
+        "requirements": { "habitable": true, "inhabited": true, "type": ["Terrestrial"] },
+        "populationRange": { "min": 500000, "max": 100000000 },
+        "incompatibleTags": ["Forge World"]
+    },
+    {
+        "name": "Regional Hegemon",
+        "description": "A dominant political and military power in its region, exerting influence over neighboring worlds.",
+        "requirements": { "inhabited": true },
+        "populationRange": { "min": 1000000000, "max": 200000000000 },
+        "incompatibleTags": ["Rising Hegemon"]
+    },
+    {
+        "name": "Rising Hegemon",
+        "description": "An emerging power that is rapidly expanding its influence and control over nearby systems.",
+        "requirements": { "inhabited": true },
+        "populationRange": { "min": 500000000, "max": 10000000000 },
+        "incompatibleTags": ["Regional Hegemon"]
+    },
+    {
+        "name": "Quarantined World",
+        "description": "A planet under strict quarantine due to a deadly disease outbreak or other biohazard.",
+        "requirements": { "inhabited": true },
+        "populationModifier": 0.6,
+        "incompatibleTags": ["Civil War"]
+    },
+    {
+        "name": "Pilgrimage Site",
+        "description": "A sacred location that attracts visitors from across the galaxy for religious or spiritual reasons.",
+        "requirements": { "inhabited": true },
+        "populationRange": { "min": 10000, "max": 2000000 },
+        "incompatibleTags": ["Active Battlefield", "Civil War", "Rampant Slavery"]
+    },
+    {
+        "name": "Active Battlefield",
+        "description": "A planet currently embroiled in conflict, with ongoing battles and military operations.",
+        "requirements": { "inhabited": true },
+        "populationModifier": 0.7,
+        "incompatibleTags": ["Pilgrimage Site", "Xeno Preserve"]
+    },
+    {
+        "name": "Rampant Slavery",
+        "description": "A world where slavery is widespread and systematically enforced.",
+        "requirements": { "inhabited": true },
+        "populationModifier": 0.5,
+        "incompatibleTags": ["Pilgrimage Site", "Active Battlefield"]
+    },
+    {
+        "name": "Cultural Center",
+        "description": "A hub of art, music, and cultural exchange, attracting visitors and residents alike.",
+        "requirements": { "inhabited": true },
+        "populationRange": { "min": 500000, "max": 50000000 },
+        "incompatibleTags": ["Abandoned Colony"]
+    },
+        {
+            "name": "Agri World",
+            "description": "A planet primarily dedicated to agriculture and food production, often featuring vast farmlands and bio-domes.",
+            "requirements": { "inhabited": true, "habitable": true, "type": ["Terrestrial", "Oceanic"] },
+            "populationRange": { "min": 1000000, "max": 100000000 },
+            "incompatibleTags": ["Abandoned Colony", "Prison Planet", "Forge World"]
+        },
+        {
+            "name": "Planetary Rings",
+            "description": "A spectacular system of dust, ice, and rock orbits the planet, providing both a scientific wonder and a source of raw materials.",
+            "requirements": { "type": ["Gas Giant", "Terrestrial", "Barren", "Desert", "Arctic", "Volcanic", "Oceanic"] },
+            "incompatibleTags": ["Orbital Graveyard"]
+        },
+        {
+            "name": "Tidally Locked",
+            "description": "The planet's rotation matches its orbit; one side is trapped in eternal, scorching day, while the other is lost to absolute, frozen night.",
+            "requirements": { "type": ["Barren", "Desert", "Volcanic", "Arctic"] },
+            "populationModifier": 0.2
+        },
+        {
+            "name": "Bioluminescent Biosphere",
+            "description": "The planet's ecosystem is defined by life that generates its own light, creating glowing forests and luminous oceans visible from space.",
+            "requirements": { "habitable": true, "type": ["Terrestrial", "Oceanic"] }
+        },
+        {
+            "name": "Orbital Graveyard",
+            "description": "The space surrounding this world is a lethal thicket of ancient ship hulls and debris from a forgotten interstellar conflict.",
+            "requirements": {},
+            "incompatibleTags": ["Planetary Rings", "Ecumenopolis"]
+        },
+        {
+            "name": "Failed Colony",
+            "description": "A recent attempt to settle this world has ended in disaster. Empty prefabs and silent distress beacons are all that remain.",
+            "requirements": { "inhabited": false, "habitable": true },
+            "populationRange": { "min": 0, "max": 0 },
+            "incompatibleTags": ["Abandoned Colony", "Colony"]
+        },
+        {
+            "name": "Heavy Gravity",
+            "description": "The planet's immense mass creates a crushing gravitational pull, requiring specialized equipment or genetic adaptation for humans to survive.",
+            "requirements": { "type": ["Huge", "Massive", "Terrestrial", "Volcanic"] },
+            "populationModifier": 0.7
+        }
+    ]
+    

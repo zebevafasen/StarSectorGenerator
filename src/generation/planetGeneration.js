@@ -1,5 +1,6 @@
 import namesData from '../data/names.json';
 import planetSizes from '../data/planet_sizes.json';
+import planetTagsData from '../data/planet_tags.json';
 import systemGenerationConfig from '../data/system_generation_config.json';
 import {
   getAtmosphereByName,
@@ -43,13 +44,17 @@ const ensureHabitablePlanetWhenPossible = (bodies, stars, seedBase) => {
     return bodies;
   }
 
+  const primaryStar = stars[0];
+  if (!primaryStar || ['Black Hole', 'Neutron'].includes(primaryStar.type)) {
+    return bodies;
+  }
+
   const hasHabitable = bodies.some((body) => getPlanetByType(body.type)?.data?.habitable);
   if (hasHabitable) {
     return bodies;
   }
 
-  const primaryStar = stars[0];
-  const starInfo = primaryStar ? getStarByType(primaryStar.type) : null;
+  const starInfo = getStarByType(primaryStar.type);
   const possiblePlanetTypes = starInfo?.data?.planetTypeWeights || {};
 
   const habitableTypes = Object.keys(possiblePlanetTypes).filter((type) => {
@@ -71,56 +76,91 @@ const ensureHabitablePlanetWhenPossible = (bodies, stars, seedBase) => {
 const isInhabitableCandidate = (body) =>
   body?.habitable === true && Number(body?.habitabilityRate ?? 0) > 0;
 
-const assignInhabitedPlanets = (bodies, seedBase, systemName) => {
-  if (!bodies?.length) {
-    return bodies;
-  }
+const assignInhabitationStatus = (bodies, seedBase) => {
+  if (!bodies?.length) return [];
 
   const inhabitablePlanetIndices = bodies
     .map((body, index) => ({ body, index }))
     .filter(({ body }) => isInhabitableCandidate(body))
     .map(({ index }) => index);
 
-  if (inhabitablePlanetIndices.length === 0) {
-    return bodies;
-  }
+  const result = bodies.map((body) => ({ ...body, isInhabited: false, isPrimaryInhabited: false }));
 
-  const result = bodies.map((body) => ({ ...body, isInhabited: false }));
+  if (inhabitablePlanetIndices.length === 0) return result;
+
   const shuffledHabitable = [...inhabitablePlanetIndices];
   for (let i = shuffledHabitable.length - 1; i > 0; i--) {
     const j = Math.floor(hashToUnit(`${seedBase}:inhabit_shuffle:${i}`) * (i + 1));
     [shuffledHabitable[i], shuffledHabitable[j]] = [shuffledHabitable[j], shuffledHabitable[i]];
   }
 
-  let inhabitedCount = 0;
-  let primaryInhabitedPlanetIndex = -1;
+  const primaryIndex = shuffledHabitable.shift();
+  result[primaryIndex].isInhabited = true;
+  result[primaryIndex].isPrimaryInhabited = true;
 
-  if (shuffledHabitable.length > 0) {
-    primaryInhabitedPlanetIndex = shuffledHabitable.shift();
-    const primaryPlanet = result[primaryInhabitedPlanetIndex];
-    const suffixes = namesData.PRIMARY_PLANET_SUFFIXES || [];
-    const suffix = suffixes[Math.floor(hashToUnit(`${seedBase}:primary_suffix`) * suffixes.length)] || 'Prime';
-
-    primaryPlanet.name = suffix;
-    primaryPlanet.isInhabited = true;
-    primaryPlanet.namingStyle = 'suffix';
-    inhabitedCount++;
-  }
-
-  const secondaryInhabitedIndices = new Set();
+  let inhabitedCount = 1;
   for (const planetIndex of shuffledHabitable) {
-    if (inhabitedCount >= MAX_INHABITATED_PLANETS) {
-      break;
-    }
-
+    if (inhabitedCount >= MAX_INHABITATED_PLANETS) break;
     const chance = (POPULATION.CHANCE ?? 0.3) / inhabitedCount;
     if (hashToUnit(`${seedBase}:inhabited_chance:${planetIndex}`) < chance) {
       result[planetIndex].isInhabited = true;
-      secondaryInhabitedIndices.add(planetIndex);
       inhabitedCount++;
     }
   }
 
+  return result;
+};
+
+const assignPlanetTags = (bodies, seedBase) => {
+  return bodies.map((body, index) => {
+    const possibleTags = planetTagsData.filter((tag) => {
+      const req = tag.requirements || {};
+      
+      if (req.inhabited !== undefined && req.inhabited !== body.isInhabited) return false;
+      if (req.habitable !== undefined && req.habitable !== body.habitable) return false;
+      if (req.type && !req.type.includes(body.type)) return false;
+      
+      return true;
+    });
+
+    if (possibleTags.length === 0) return { ...body, tags: [] };
+
+    const tagSeed = `${seedBase}:body:${index}:tags`;
+    const tagCountRoll = hashToUnit(`${tagSeed}:count`);
+    const numTags = tagCountRoll < 0.7 ? 1 : 2;
+
+    const selectedTags = [];
+    let availableTags = [...possibleTags];
+    
+    for (let i = 0; i < numTags && availableTags.length > 0; i++) {
+      const pickRoll = hashToUnit(`${tagSeed}:pick:${i}`);
+      const pickIndex = Math.floor(pickRoll * availableTags.length);
+      const pickedTag = availableTags.splice(pickIndex, 1)[0];
+      selectedTags.push(pickedTag);
+
+      if (pickedTag.incompatibleTags) {
+        availableTags = availableTags.filter(t => !pickedTag.incompatibleTags.includes(t.name));
+      }
+    }
+
+    return { ...body, tags: selectedTags };
+  });
+};
+
+const enforceSystemLogic = (bodies) => {
+  const primaryInhabited = bodies.find(b => b.isPrimaryInhabited);
+  
+  // Colony Rule: If the Primary world is a Colony, it is the ONLY inhabited world.
+  if (primaryInhabited?.tags?.some(t => t.name === "Colony")) {
+    return bodies.map(b => {
+      if (b === primaryInhabited) return b;
+      return { ...b, isInhabited: false, population: 0 };
+    });
+  }
+  return bodies;
+};
+
+const applyNaming = (bodies, seedBase, systemName) => {
   const useGreekAlphabet = hashToUnit(`${seedBase}:naming_scheme`) < 0.5;
   const namingList = useGreekAlphabet ? namesData.GREEK_ALPHABET : namesData.ROMAN_NUMERALS;
 
@@ -138,24 +178,23 @@ const assignInhabitedPlanets = (bodies, seedBase, systemName) => {
   let secondaryNamePoolIndex = 0;
   let uninhabitedSequentialCounter = 0;
 
-  return result.map((body, index) => {
-    if (index === primaryInhabitedPlanetIndex) {
-      return body;
+  return bodies.map((body) => {
+    if (body.isInhabited && body.isPrimaryInhabited) {
+      const suffixes = namesData.PRIMARY_PLANET_SUFFIXES || [];
+      const suffix = suffixes[Math.floor(hashToUnit(`${seedBase}:primary_suffix`) * suffixes.length)] || 'Prime';
+      return { ...body, name: suffix, namingStyle: 'suffix' };
     }
 
     let newName;
     let namingStyle;
 
-    if (secondaryInhabitedIndices.has(index)) {
+    if (body.isInhabited) {
       if (secondaryNamePoolIndex < shuffledSecondaryNamesPool.length) {
         const chosenOption = shuffledSecondaryNamesPool[secondaryNamePoolIndex];
         newName = chosenOption.name;
         namingStyle = chosenOption.style;
         secondaryNamePoolIndex++;
       } else {
-        console.warn(
-          `Ran out of unique secondary planet names for system ${systemName}. Falling back to generic "${DEFAULT_SECONDARY_PLANET_FALLBACK_NAME}".`
-        );
         newName = DEFAULT_SECONDARY_PLANET_FALLBACK_NAME;
         namingStyle = 'suffix';
       }
@@ -170,6 +209,10 @@ const assignInhabitedPlanets = (bodies, seedBase, systemName) => {
 };
 
 export const generatePlanetBodiesForStar = (star, rng, maxPlanets = MAX_PLANETS) => {
+  if (!star || ['Black Hole', 'Neutron'].includes(star.type)) {
+    return [];
+  }
+
   const weights = star.data?.planetTypeWeights;
   if (!weights) {
     return [];
@@ -193,6 +236,42 @@ export const generatePlanetBodiesForStar = (star, rng, maxPlanets = MAX_PLANETS)
   }
 
   return bodies;
+};
+
+const calculatePopulation = (body, seedBase) => {
+  if (!body.isInhabited) return 0;
+
+  const sizeInfo = planetSizes.find((s) => s.name === body.size);
+  const sizeFactor = sizeInfo?.populationFactor ?? 1.0;
+  
+  // Base population calculation: 1 Billion * sizeFactor * habitability
+  // We use a base of 1 billion for a Medium, perfectly habitable world.
+  const basePop = 1000000000;
+  let finalPop = basePop * sizeFactor * (body.habitabilityRate || 0.1);
+
+  // Apply Tag Overrides and Modifiers
+  const tags = body.tags || [];
+  
+  // 1. Check for Range Overrides (highest precedence)
+  const rangeOverride = tags.find(t => t.populationRange);
+  if (rangeOverride) {
+    const { min, max } = rangeOverride.populationRange;
+    const roll = hashToUnit(`${seedBase}:pop_roll`);
+    finalPop = Math.floor(roll * (max - min + 1)) + min;
+  } else {
+    // 2. Apply Multipliers
+    tags.forEach(tag => {
+      if (tag.populationModifier) {
+        finalPop *= tag.populationModifier;
+      }
+    });
+    
+    // Add some random variance (+/- 20%) if not overridden by a range
+    const variance = 0.8 + (hashToUnit(`${seedBase}:pop_variance`) * 0.4);
+    finalPop *= variance;
+  }
+
+  return Math.floor(finalPop);
 };
 
 export const processPlanetBodies = ({ bodies, stars, seedBase, systemName }) => {
@@ -232,5 +311,13 @@ export const processPlanetBodies = ({ bodies, stars, seedBase, systemName }) => 
     };
   });
 
-  return assignInhabitedPlanets(bodiesWithEnvironment, seedBase, systemName);
+  const withInhabitants = assignInhabitationStatus(bodiesWithEnvironment, seedBase);
+  const withTags = assignPlanetTags(withInhabitants, seedBase);
+  const logicApplied = enforceSystemLogic(withTags);
+  const named = applyNaming(logicApplied, seedBase, systemName);
+
+  return named.map((body, index) => ({
+    ...body,
+    population: calculatePopulation(body, `${seedBase}:body:${index}:pop`)
+  }));
 };
