@@ -4,15 +4,35 @@ import { pickWeighted } from '../utils/weightedPicker';
 import { createRNG, stringToSeed } from '../utils/rng';
 
 /**
+ * Filtered POI data to remove Jump Gates from the random pool, 
+ * as they are now managed by the stable network logic.
+ */
+const RANDOM_POI_POOL = poiData.filter(poi => 
+  poi.type !== 'Jump-Gate' && poi.type !== 'Jump Gate'
+);
+
+const JUMP_CONFIG = poiTypes.find(t => t.name === 'Jump Gate')?.data || {
+  maxPerSector: 1,
+  minSectorDistanceFromOtherJumpGates: 5,
+  maxSectorDistanceFromOtherJumpGates: 20,
+  nearbySectorSuppressionRadius: 3
+};
+
+/**
  * Deterministically calculates where a gate at a specific sector leads.
  */
 export const calculateGateDestination = (rng, sq, sr) => {
-  // Use the provided rng to keep it deterministic
-  const dist = Math.floor(rng() * 4) + 2; // 2-5 sectors
+  const min = JUMP_CONFIG.minSectorDistanceFromOtherJumpGates;
+  const max = JUMP_CONFIG.maxSectorDistanceFromOtherJumpGates;
+  
+  const dist = Math.floor(rng() * (max - min + 1)) + min;
   const angle = rng() * Math.PI * 2;
+  
   const dq = Math.round(Math.cos(angle) * dist);
   const dr = Math.round(Math.sin(angle) * dist);
-  const finalDq = dq === 0 && dr === 0 ? 1 : dq;
+  
+  // Ensure we don't jump to exactly the same sector
+  const finalDq = dq === 0 && dr === 0 ? min : dq;
 
   return {
     q: sq + finalDq,
@@ -21,37 +41,75 @@ export const calculateGateDestination = (rng, sq, sr) => {
 };
 
 /**
- * Scans neighbors to see if any point TO the current sector.
- * Returns an array of all inbound gate origins.
+ * Priority-based check to see if a sector is allowed to be an origin of a Jump-Gate link.
+ * Respects the suppression radius.
  */
-export const getAllInboundGates = (universeSeed, sq, sr) => {
-  const scanRange = 6; 
-  const origins = [];
+const isGateOrigin = (universeSeed, sq, sr) => {
+  const radius = JUMP_CONFIG.nearbySectorSuppressionRadius;
   
-  for (let dq = -scanRange; dq <= scanRange; dq++) {
-    for (let dr = -scanRange; dr <= scanRange; dr++) {
+  const getPriority = (q, r) => {
+    const rng = createRNG(stringToSeed(`${universeSeed}_gate_prio_${q}_${r}`));
+    const roll = rng();
+    // 1.5% base chance to be an origin candidate
+    return roll < 0.015 ? roll : -1;
+  };
+
+  const myPriority = getPriority(sq, sr);
+  if (myPriority === -1) return false;
+
+  // Check neighbors within suppression radius
+  for (let dq = -radius; dq <= radius; dq++) {
+    for (let dr = -radius; dr <= radius; dr++) {
+      if (dq === 0 && dr === 0) continue;
+      if (getPriority(sq + dq, sr + dr) > myPriority) return false;
+    }
+  }
+  
+  return true;
+};
+
+/**
+ * Returns the Jump-Gate link for a given sector, if one exists.
+ * Ensures 1:1 bi-directional mapping.
+ */
+export const getJumpGateLink = (universeSeed, sq, sr) => {
+  // 1. Check if this sector is an Origin
+  if (isGateOrigin(universeSeed, sq, sr)) {
+    const rng = createRNG(stringToSeed(`${universeSeed}_gate_dest_${sq}_${sr}`));
+    return {
+      destination: calculateGateDestination(rng, sq, sr),
+      isOrigin: true
+    };
+  }
+
+  // 2. Check if this sector is a Target of any potential origin in range
+  const maxRange = JUMP_CONFIG.maxSectorDistanceFromOtherJumpGates;
+  for (let dq = -maxRange; dq <= maxRange; dq++) {
+    for (let dr = -maxRange; dr <= maxRange; dr++) {
       if (dq === 0 && dr === 0) continue;
       
       const nq = sq + dq;
       const nr = sr + dr;
       
-      const networkSeed = stringToSeed(`${universeSeed}_net_${nq}_${nr}`);
-      const netRng = createRNG(networkSeed);
-      
-      // 10% chance per sector to have an outbound gate (Increased for better connectivity)
-      if (netRng() < 0.10) { 
-        const dest = calculateGateDestination(netRng, nq, nr);
+      if (isGateOrigin(universeSeed, nq, nr)) {
+        const rng = createRNG(stringToSeed(`${universeSeed}_gate_dest_${nq}_${nr}`));
+        const dest = calculateGateDestination(rng, nq, nr);
+        
         if (dest.q === sq && dest.r === sr) {
-          origins.push({ q: nq, r: nr });
+          return {
+            destination: { q: nq, r: nr },
+            isOrigin: false
+          };
         }
       }
     }
   }
-  return origins;
+
+  return null;
 };
 
 export const generatePOIAtCoordinate = (rng, q, r, sectorQ = 0, sectorR = 0) => {
-  const pickedRaw = pickWeighted(poiData, p => p.weight, rng());
+  const pickedRaw = pickWeighted(RANDOM_POI_POOL, p => p.weight, rng());
   const picked = { ...pickedRaw };
   const typeDef = poiTypes.find(t => t.name === picked.type) || {};
 
@@ -62,23 +120,6 @@ export const generatePOIAtCoordinate = (rng, q, r, sectorQ = 0, sectorR = 0) => 
     location: { q, r },
     globalLocation: { sectorQ, sectorR }
   };
-
-  // Jump-Gate Logic
-  if ((result.type === 'Jump-Gate' || result.type === 'Jump Gate') && result.state) {
-    result.name = `${result.state} Jump-Gate`;
-    const baseDescription = typeDef.description || result.description;
-    const stateInfo = result.state === 'Active' 
-      ? "It hums with immense power, its internal rings spinning in a blur of light." 
-      : "It remains silent and dark, waiting for a key or command to reawaken.";
-    
-    result.description = `${baseDescription} ${stateInfo}`;
-
-    // Standard POI jump gates (not part of the stable network) point to random nearby sectors
-    if (result.state === 'Active' && !result.destination) {
-      const dist = Math.floor(rng() * 3) + 1;
-      result.destination = { q: sectorQ + dist, r: sectorR };
-    }
-  }
 
   return result;
 };

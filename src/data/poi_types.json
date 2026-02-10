@@ -36,7 +36,8 @@
     "data": {
         "maxPerSector": 1,
         "minSectorDistanceFromOtherJumpGates": 5,
-        "maxSectorDistanceFromOtherJumpGates": 20
+        "maxSectorDistanceFromOtherJumpGates": 20,
+        "nearbySectorSuppressionRadius": 3
     }
     }
 ]

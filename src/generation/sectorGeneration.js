@@ -2,7 +2,7 @@ import generatorConfig from '../data/generator_config.json';
 import { createRNG, stringToSeed } from '../utils/rng';
 import { createWeightedStarPicker } from '../utils/starData';
 import { generateSystemAtCoordinate } from './systemGeneration';
-import { generatePOIAtCoordinate, getAllInboundGates, calculateGateDestination } from './poiGeneration';
+import { generatePOIAtCoordinate, getJumpGateLink } from './poiGeneration';
 import { SYSTEM_GENERATION } from './generationConstants';
 
 const { DENSITY_PRESETS } = generatorConfig;
@@ -122,31 +122,22 @@ export const generateSector = ({
   const pickStar = createWeightedStarPicker();
   const systemsByCoord = {};
 
-  // 1. Stable Network Gates (Guaranteed bi-directional links)
-  const networkSeed = stringToSeed(`${seed}_net_${sectorQ}_${sectorR}`);
-  const netRng = createRNG(networkSeed);
+  // 1. Check for Stable Network Gate (Sparse 1:1 Network)
+  const gateLink = getJumpGateLink(seed, sectorQ, sectorR);
   
-  const outboundLinks = [];
-  if (netRng() < 0.10) { // 10% chance of a dedicated outbound link
-    outboundLinks.push(calculateGateDestination(netRng, sectorQ, sectorR));
-  }
-  const inboundOrigins = getAllInboundGates(seed, sectorQ, sectorR);
-
-  // All targeted sectors must have an active gate
-  const activeLinks = [...outboundLinks, ...inboundOrigins];
-  
-  // Deterministically place network gates to ensure they don't shift
-  activeLinks.forEach((dest) => {
-    // We use the netRng to pick a coordinate from the available ones
-    // This makes the gate location stable for this sector/seed
+  if (gateLink) {
+    // Deterministically pick a coordinate for the gate
+    const networkSeed = stringToSeed(`${seed}_gate_loc_${sectorQ}_${sectorR}`);
+    const netRng = createRNG(networkSeed);
     const coordIndex = Math.floor(netRng() * coords.length);
     const gateCoord = coords.splice(coordIndex, 1)[0];
     
     if (gateCoord) {
+      const dest = gateLink.destination;
       systemsByCoord[`${gateCoord.q},${gateCoord.r}`] = {
         name: `Active Jump-Gate`,
         type: 'Jump-Gate',
-        description: `A massive, active structure connecting Sector [${sectorQ},${sectorR}] to [${dest.q},${dest.r}].`,
+        description: `A massive, active structure connecting Sector [${sectorQ},${sectorR}] to [${dest.q},${dest.r}]. It hums with immense power, its internal rings spinning in a blur of light.`,
         color: '#2563eb',
         risk: 'High',
         state: 'Active',
@@ -156,13 +147,15 @@ export const generateSector = ({
         destination: dest
       };
     }
-  });
+  }
 
-  // 2. Map coordinates for remaining systems and POIs
+  // 2. Generate standard systems
   const systemCoords = coords.slice(0, targetCount);
   const emptyCoords = coords.slice(targetCount);
 
   systemCoords.forEach(({ q, r }) => {
+    if (systemsByCoord[`${q},${r}`]) return;
+    
     systemsByCoord[`${q},${r}`] = {
       ...generateSystemAtCoordinate({
         q,
@@ -177,9 +170,12 @@ export const generateSector = ({
     };
   });
 
+  // 3. Generate standard POIs
   emptyCoords.forEach(({ q, r }) => {
+    if (systemsByCoord[`${q},${r}`]) return;
+
     if (rng() < SYSTEM_GENERATION.POI_CHANCE) {
-      systemsByCoord[`${q},${r}`] = generatePOIAtCoordinate(rng, q, r, sectorQ, sectorR, seed);
+      systemsByCoord[`${q},${r}`] = generatePOIAtCoordinate(rng, q, r, sectorQ, sectorR);
     }
   });
 
