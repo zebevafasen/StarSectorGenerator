@@ -34,6 +34,23 @@ export default function GalaxyMap({
 
   const exploredSectors = useMemo(() => Object.entries(universe), [universe]);
 
+  // Helper to build a single path for an entire sector's background hexes
+  const getSectorGridPath = (gridSize) => {
+    let path = "";
+    const h = HEX_HEIGHT / 2;
+    const s = HEX_SIZE;
+    const s2 = s / 2;
+
+    for (let q = 0; q < gridSize.width; q++) {
+      for (let r = 0; r < gridSize.height; r++) {
+        const x = HEX_SIZE * 1.5 * q + HEX_SIZE;
+        const y = HEX_HEIGHT * (r + 0.5 * (q % 2)) + HEX_HEIGHT / 2;
+        path += `M ${x+s} ${y} L ${x+s2} ${y+h} L ${x-s2} ${y+h} L ${x-s} ${y} L ${x-s2} ${y-h} L ${x+s2} ${y-h} Z `;
+      }
+    }
+    return path;
+  };
+
   return (
     <div className="flex-1 relative bg-slate-950 overflow-hidden cursor-move w-full h-full">
       <MapBackground viewState={viewState} />
@@ -60,35 +77,44 @@ export default function GalaxyMap({
 
               return (
                 <g key={key} transform={`translate(${sectorOffsetX}, ${sectorOffsetY})`}>
-                  {/* Sector Boundary */}
+                  {/* Sector Background / Placeholder Grid */}
                   <rect 
                     width={stride.x} 
                     height={stride.y} 
-                    fill="none" 
+                    fill="#020617" 
+                    fillOpacity="0.5"
                     stroke="white" 
-                    strokeWidth="2" 
-                    opacity="0.05" 
+                    strokeWidth="1" 
+                    opacity="0.1" 
+                    className="pointer-events-none"
+                  />
+
+                  {/* Efficient background hex grid */}
+                  <path 
+                    d={getSectorGridPath(gridSize)} 
+                    fill="none" 
+                    stroke="#1e293b" 
+                    strokeWidth="0.5" 
+                    opacity="0.4"
                     className="pointer-events-none"
                   />
                   
-                  {/* Hexes in this sector */}
-                  {Array.from({ length: gridSize.width }).map((_, q) => (
-                    Array.from({ length: gridSize.height }).map((_, r) => {
-                      const sys = systems[`${q},${r}`];
-                      if (!sys) return null;
-                      return (
-                        <HexagonShape
-                          key={`${q},${r}`}
-                          q={q}
-                          r={r}
-                          hasSystem={true}
-                          systemData={sys}
-                          isSelected={false}
-                          onClick={() => {}} 
-                        />
-                      );
-                    })
-                  ))}
+                  {/* Only render actual systems and POIs as full HexagonShapes */}
+                  {Object.entries(systems).map(([coordKey, sys]) => {
+                    if (!sys) return null;
+                    const [q, r] = coordKey.split(',').map(Number);
+                    return (
+                      <HexagonShape
+                        key={`${q},${r}`}
+                        q={q}
+                        r={r}
+                        hasSystem={true}
+                        systemData={sys}
+                        isSelected={false}
+                        onClick={() => {}} 
+                      />
+                    );
+                  })}
 
                   {/* Sector Coordinate Label */}
                   <text
