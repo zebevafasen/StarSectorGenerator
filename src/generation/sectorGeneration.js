@@ -2,6 +2,8 @@ import generatorConfig from '../data/generator_config.json';
 import { createRNG, stringToSeed } from '../utils/rng';
 import { createWeightedStarPicker } from '../utils/starData';
 import { generateSystemAtCoordinate } from './systemGeneration';
+import { generatePOIAtCoordinate } from './poiGeneration';
+import { SYSTEM_GENERATION } from './generationConstants';
 
 const { DENSITY_PRESETS } = generatorConfig;
 
@@ -120,16 +122,28 @@ export const generateSector = ({
   const pickStar = createWeightedStarPicker();
   const systemsByCoord = {};
 
-  coords.slice(0, targetCount).forEach(({ q, r }) => {
-    systemsByCoord[`${q},${r}`] = generateSystemAtCoordinate({
-      q,
-      r,
-      rng,
-      systemsByCoord,
-      pickStar,
-      sectorQ,
-      sectorR
-    });
+  const systemCoords = coords.slice(0, targetCount);
+  const emptyCoords = coords.slice(targetCount);
+
+  systemCoords.forEach(({ q, r }) => {
+    systemsByCoord[`${q},${r}`] = {
+      ...generateSystemAtCoordinate({
+        q,
+        r,
+        rng,
+        systemsByCoord,
+        pickStar,
+        sectorQ,
+        sectorR
+      }),
+      isSystem: true
+    };
+  });
+
+  emptyCoords.forEach(({ q, r }) => {
+    if (rng() < SYSTEM_GENERATION.POI_CHANCE) {
+      systemsByCoord[`${q},${r}`] = generatePOIAtCoordinate(rng, q, r);
+    }
   });
 
   return systemsByCoord;

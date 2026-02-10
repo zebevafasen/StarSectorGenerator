@@ -1,0 +1,58 @@
+[
+  {
+    "type": "Nebula",
+    "name": "Ionized Gas Cloud",
+    "description": "A dense, shimmering nebula that interferes with long-range sensors and communication.",
+    "color": "#a855f7",
+    "weight": 1.0
+  },
+  {
+    "type": "Anomaly",
+    "name": "Gravity Well",
+    "description": "A localized distortion in space-time that pulls on nearby vessels. Its origin is unknown.",
+    "color": "#ec4899",
+    "weight": 0.8
+  },
+  {
+    "type": "Wreckage",
+    "name": "Ship Graveyard",
+    "description": "The silent remains of a centuries-old space battle. Twisted hulls of massive cruisers drift in the void.",
+    "color": "#94a3b8",
+    "weight": 0.6
+  },
+  {
+    "type": "Relic",
+    "name": "Precursor Array",
+    "description": "A massive, non-functional structure of alien design. It emits a faint, rhythmic hum.",
+    "color": "#22d3ee",
+    "weight": 0.5
+  },
+  {
+    "type": "Resource",
+    "name": "Rich Asteroid Field",
+    "description": "A dense cluster of rocks rich in rare minerals. A beacon for mining corporations.",
+    "color": "#f59e0b",
+    "weight": 1.2
+  },
+  {
+    "type": "Danger",
+    "name": "Radiation Storm",
+    "description": "A violent swirl of high-energy particles that makes transit extremely hazardous.",
+    "color": "#ef4444",
+    "weight": 0.7
+  },
+  {
+    "type": "Mystery",
+    "name": "Ghost Signal",
+    "description": "A repetitive, undecipherable signal originating from a point in deep space. No source is visible.",
+    "color": "#10b981",
+    "weight": 0.9
+  },
+  {
+    "type": "Outpost",
+    "name": "Smuggler's Cache",
+    "description": "A hidden stash of cargo containers, likely left by a criminal syndicate for later retrieval.",
+    "color": "#84cc16",
+    "weight": 0.6
+  }
+]

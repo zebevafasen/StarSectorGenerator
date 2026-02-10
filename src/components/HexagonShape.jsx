@@ -3,6 +3,7 @@ import { HEX_SIZE, HEX_HEIGHT } from '../constants';
 import { getHexId } from '../utils/helpers';
 import { getSystemStarLayout } from '../utils/starLayout';
 import SystemStarIcon from './SystemStarIcon';
+import PoiIcon from './PoiIcon';
 
 const h = HEX_HEIGHT / 2;
 const s = HEX_SIZE;
@@ -76,7 +77,7 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
         />
       )}
 
-      {hasSystem &&
+      {hasSystem && systemData?.isSystem &&
         stars.map((star, index) => {
           const { xOffset, yOffset, scale } = getSystemStarLayout(stars.length, index);
           return (
@@ -85,6 +86,10 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
             </g>
           );
         })}
+
+      {hasSystem && systemData?.isPOI && (
+        <PoiIcon type={systemData.type} color={systemData.color} inSvg={true} />
+      )}
     </g>
   );
 };

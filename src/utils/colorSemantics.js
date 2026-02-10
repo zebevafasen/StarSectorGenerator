@@ -32,5 +32,7 @@ export const normalizeStarColor = (color = {}) => {
   };
 };
 
-export const getMainColor = (color = {}) =>
-  color.main ?? color.base ?? color.core ?? color.secondary ?? color.mid ?? color.halo ?? DEFAULT_ACCENT;
+export const getMainColor = (color = {}) => {
+  if (typeof color === 'string') return color;
+  return color.main ?? color.base ?? color.core ?? color.secondary ?? color.mid ?? color.halo ?? DEFAULT_ACCENT;
+};

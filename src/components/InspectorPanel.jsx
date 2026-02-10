@@ -6,8 +6,10 @@ import InspectorTooltip from './inspector/InspectorTooltip';
 import PlanetDetailView from './inspector/PlanetDetailView';
 import StarDetailView from './inspector/StarDetailView';
 import StationDetailView from './inspector/StationDetailView';
+import PoiDetailView from './inspector/PoiDetailView';
 import { useTooltip } from '../hooks/useTooltip';
 import { useAccordion } from '../hooks/useAccordion';
+import { getPoiTooltipData } from '../utils/tooltipUtils';
 import {
   StarSection,
   PlanetsSection,
@@ -17,10 +19,24 @@ import {
 
 function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
+
+  // Handle POI selection automatically when a POI hex is clicked
+  React.useEffect(() => {
+    if (selectedSystem?.isPOI && !focusedObject) {
+      const tooltipData = getPoiTooltipData(selectedSystem);
+      setFocusedObject({ type: 'poi', data: selectedSystem, tooltipData });
+    }
+  }, [selectedSystem, focusedObject, setFocusedObject]);
+
   const { expanded, toggle } = useAccordion({ stars: true, planets: true, stations: true, beltsAndFields: true });
   const { tooltip, handleTooltipEnter, handleTooltipMove, handleTooltipLeave } = useTooltip();
 
-  const handleBackToSystem = () => setFocusedObject(null);
+  const handleBackToSystem = () => {
+    if (selectedSystem?.isPOI) {
+      setSelectedCoords(null);
+    }
+    setFocusedObject(null);
+  };
 
   return (
     <aside className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 shadow-xl z-20">
@@ -73,13 +89,18 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
                   systemName={selectedSystem.baseName || selectedSystem.name}
                   onBack={handleBackToSystem} 
                 />
+              ) : focusedObject.type === 'poi' ? (
+                <PoiDetailView 
+                  object={focusedObject} 
+                  onBack={handleBackToSystem} 
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center p-8 opacity-50">
                   <p>Detail view coming soon for {focusedObject.type}</p>
                   <button onClick={handleBackToSystem} className="mt-4 text-blue-400 hover:text-blue-300 underline">Back to System</button>
                 </div>
               )
-            ) : selectedSystem ? (
+            ) : selectedSystem?.isSystem ? (
               <div className="space-y-4">
                 <StarSection
                   expanded={expanded.stars}
@@ -117,14 +138,18 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
                   selectedSystem={selectedSystem}
                 />
               </div>
-            ) : (
+            ) : selectedSystem?.isPOI ? (
+              <div className="flex items-center justify-center h-32 text-slate-500 animate-pulse">
+                Analyzing anomaly...
+              </div>
+            ) : selectedCoords ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-60">
                 <div className="w-20 h-20 rounded-full border-2 border-dashed border-slate-700 flex items-center justify-center mb-4">
                   <Hexagon size={40} className="text-slate-700" />
                 </div>
                 <p className="text-xs text-slate-500 mt-2">Sector {getHexId(selectedCoords.q, selectedCoords.r)} is empty.</p>
               </div>
-            )}
+            ) : null}
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-50">

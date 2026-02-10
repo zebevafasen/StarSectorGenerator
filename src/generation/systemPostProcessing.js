@@ -11,6 +11,11 @@ export { hashToUnit };
 export const postProcessSystems = (systems) =>
   Object.fromEntries(
     Object.entries(systems).map(([coords, system]) => {
+      // Skip POIs during heavy post-processing meant for star systems
+      if (system.isPOI) {
+        return [coords, system];
+      }
+
       const stars = system.stars ? [...system.stars] : (system.star ? [system.star] : []);
       const seedBase = `${coords}|${system.baseName || system.name || system.star?.name || 'system'}`;
 
@@ -43,6 +48,7 @@ export const postProcessSystems = (systems) =>
         coords,
         {
           ...system,
+          isSystem: true,
           stars: starsWithCompanions,
           bodies: bodiesWithSize || system.bodies,
           belts,

@@ -48,7 +48,7 @@ export default function InspectorTooltip({ tooltip }) {
             {ageRange && <div><span className="font-bold" style={{ color: accentColor }}>Age Range:</span> {ageRange}</div>}
           </>
         )}
-        {(isPlanetTypeTooltip || isPlanetSizeTooltip || isStationTooltip) && (
+        {(isPlanetTypeTooltip || isPlanetSizeTooltip || isStationTooltip || info.isPOI) && (
           <>
             <div className="text-slate-300">{typeof info.description === 'string' ? info.description : 'No description available.'}</div>
             {isPlanetTypeTooltip && info.habitability && (

@@ -75,3 +75,16 @@ export const getPlanetSizeTooltipData = (sizeName) => {
     isPlanetSize: true
   };
 };
+
+/**
+ * Prepares data for the POI tooltip.
+ */
+export const getPoiTooltipData = (poi) => {
+  return {
+    name: poi.name,
+    type: poi.type,
+    description: poi.description,
+    color: poi.color,
+    isPOI: true
+  };
+};

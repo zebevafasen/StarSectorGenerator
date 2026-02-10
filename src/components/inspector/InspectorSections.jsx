@@ -21,7 +21,7 @@ export function StarSection({
   onTooltipLeave,
   onFocus
 }) {
-  const stars = selectedSystem.stars || [selectedSystem.star];
+  const stars = selectedSystem?.stars || (selectedSystem?.star ? [selectedSystem.star] : []);
 
   return (
     <InspectorSection
@@ -79,14 +79,15 @@ export function PlanetsSection({
   onTooltipLeave,
   onFocus
 }) {
-  const systemName = selectedSystem.baseName || selectedSystem.name;
-  const sortedBodies = useMemo(() => sortSystemBodies(selectedSystem.bodies), [selectedSystem.bodies]);
+  const systemName = selectedSystem?.baseName || selectedSystem?.name || 'Unknown';
+  const bodies = selectedSystem?.bodies || [];
+  const sortedBodies = useMemo(() => sortSystemBodies(bodies), [bodies]);
 
   return (
     <InspectorSection
       icon={<Disc size={12} />}
       title="Planets"
-      count={selectedSystem.bodies.length}
+      count={bodies.length}
       expanded={expanded}
       onToggle={onToggle}
       emptyMessage="No planetary bodies detected."
