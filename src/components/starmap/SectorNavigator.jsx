@@ -48,7 +48,7 @@ export default function SectorNavigator({ onNavigate, sectorCoords, gridSize }) 
   const tabW = 80;
   const tabH = 30;
   const iconSize = 24;
-  const gap = 4; // Tiny gap from the grid edge
+  const gap = 20; // Increased gap from the grid edge
 
   return (
     <g className="sector-navigator select-none">
