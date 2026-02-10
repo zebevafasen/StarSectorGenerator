@@ -126,6 +126,7 @@ export default function App() {
       />
 
       <InspectorPanel
+        gridSize={gridSize}
         systems={systems}
         sectorCoords={sectorCoords}
         selectedCoords={selectedCoords}

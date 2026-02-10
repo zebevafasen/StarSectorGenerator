@@ -17,7 +17,7 @@ import {
   BeltsAndFieldsSection
 } from './inspector/InspectorSections';
 
-function InspectorPanel({ systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject, onJump, sectorCoords, style }) {
+function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject, onJump, sectorCoords, style }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
 
   // Handle POI selection automatically when a POI hex is clicked
@@ -47,7 +47,11 @@ function InspectorPanel({ systems, selectedCoords, setSelectedCoords, focusedObj
         <div className="flex items-center justify-between text-sm text-slate-400">
           <div className="flex items-center gap-2">
             <MapIcon size={16} />
-            <span>Sector [{sectorCoords?.q ?? 0}, {sectorCoords?.r ?? 0}]</span>
+            <span>
+              Sector [{sectorCoords?.q ?? 0}, {sectorCoords?.r ?? 0}] 
+              <span className="text-slate-600 px-1">&middot;</span>
+              {gridSize?.width}x{gridSize?.height}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Star size={16} />
