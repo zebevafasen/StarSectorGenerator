@@ -21,5 +21,74 @@
   ],
   "ROMAN_NUMERALS": [
     "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"
+  ],
+  "PRIMARY_PLANET_SUFFIXES": [
+    "Prime"
+  ],
+  "SECONDARY_PLANET_PREFIXES": [
+    "Neo", "New"
+  ],
+  "SECONDARY_PLANET_SUFFIXES": [
+    "Haven", "Eden", "Sanctuary", "Harbor", "Bastion", "Refuge", "Prospect", "Utopia", "Arcadia"
+  ],
+  "TRADE_HUB_PREFIXES": [
+  "Soros", "Livermoore", "Tudor", "Jones", "Simons", "Cohen", "Lien", "Seykota", "Lipschutz", "Tepper", "Burry" 
+  ],
+  "TRADE_HUB_SUFFIXES": [
+    "Mercantile Station", "Commerce Hub", "Trading Post", "Market Nexus", "Bazaar Station", "Exchange Outpost", "Trade Center", "Merchant's Rest"
+  ],
+      "LISTENING_POST_PREFIXES": [
+    "Astro", "Deep", "Echo", "Farwatch", "Horizon"
+  ],
+    "LISTENING_POST_SUFFIXES": [
+    "Signal Station", "Relay Outpost", "Observation Post", "Surveillance Hub", "Monitoring Station", "Watchtower", "Detection Array", "Listening Station"
+  ],
+    "MINING_OUTPOST_PREFIXES": [
+    "Ironclad", "Stonehelm", "Rockford", "Oreton", "Mineralix", "Quarryton", "Driftrock", "Excavon", "Prosperia", "Diggins"
+  ],
+  "MINING_OUTPOST_SUFFIXES": [
+    "Mining Outpost", "Extraction Hub", "Resource Station", "Quarry Base", "Drilling Platform", "Excavation Site", "Prospecting Station", "Miner's Rest"
+  ],
+  "REFUELING_DEPOT_PREFIXES": [
+    "Petro", "Hydro", "Fusion", "Star", "Waypoint", "Nomad", "Voyager", "Shell", "BP", "Aramco"
+  ],
+  "REFUELING_DEPOT_SUFFIXES": [
+    "Refueling Depot", "Fuel Station", "Resupply Hub", "Refit Station", "Fueling Outpost", "Supply Depot", "Refuel Center", "Replenishment Station"
+  ],
+  "SHIPYARD_PREFIXES": [
+    "Kerman", "Scott", "La Forge", "Brunel", "Isambard", "Aegis", "Corellian", "Kuat", "Sienar", "Incom"
+  ],
+  "SHIPYARD_SUFFIXES": [
+    "Shipyard", "Dockyard", "Construction Hub", "Refit Station", "Shipbuilding Yard", "Maritime Center", "Vessel Works", "Naval Dock"
+  ],
+  "PIRATE_HAVEN_PREFIXES": [
+    "Black", "Red", "Shadow", "Crimson", "Ghost", "Dark"
+  ],
+  "PIRATE_HAVEN_SUFFIXES": [
+    "Hideout", "Haven", "Den", "Cove", "Refuge", "Sanctuary", "Stronghold", "Base"
+  ],
+  "ORBITAL_HABITAT_PREFIXES": [
+    "Elysium", "Arcadia", "Citadel", "Presidium", "O'Neill", "Bernal", "Stanford", "Gagarin", "Shepard", "Armstrong"
+  ],
+  "ORBITAL_HABITAT_SUFFIXES": [
+    "Orbital Habitat", "Space Station", "Habitat Ring", "Living Station", "Orbital Colony", "Space Habitat", "Residential Orbital", "Habitation Module"
+  ],
+  "MILITARY_OUTPOST_PREFIXES": [
+    "Napoleon", "Caesar", "Alexander", "Hannibal", "Sparta", "Athena", "Mars", "Ares", "Leonidas", "Cyrus", "Genghis", "Saladin", "Charlemagne", "Vercingetorix", "Cortez", "Montezuma"
+  ],
+  "MILITARY_OUTPOST_SUFFIXES": [
+    "Military Outpost", "Defense Station", "Fortified Base", "Strategic Hub", "Command Post", "Garrison Station", "Defense Platform", "Military Station"
+  ],
+  "DERELICT_STATION_PREFIXES": [
+    "Old", "Rusty", "Forgotten", "Lost", "Abandoned", "Derelict", "Wrecked", "Desolate"
+  ],
+  "DERELICT_STATION_SUFFIXES": [
+    "Derelict Station", "Abandoned Outpost", "Ghost Station", "Wreckage Site", "Ruined Habitat", "Forsaken Base", "Lost Station", "Desolate Outpost"
+  ],
+  "RESEARCH_STATION_PREFIXES": [
+    "Aristotle", "Newton", "Curie", "Einstein", "Galileo", "Feynman", "Hawking", "Tesla", "Bohr", "Maxwell", "Faraday", "Kepler", "Copernicus", "Darwin", "Lovelace", "Sagan"
+  ],
+  "RESEARCH_STATION_SUFFIXES": [
+    "Research Station", "Science Outpost", "Laboratory Hub", "Study Center", "Investigation Station", "Exploration Base", "Analysis Facility", "Research Hub"
   ]
 }

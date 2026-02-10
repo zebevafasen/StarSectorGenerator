@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Tiny",
+    "weight": 2,
+    "description": "Very small world, usually with weak gravity and limited atmosphere retention."
+  },
+  {
+    "name": "Small",
+    "weight": 4,
+    "description": "Below-average planetary mass and gravity."
+  },
+  {
+    "name": "Medium",
+    "weight": 5,
+    "description": "Mid-sized world near baseline terrestrial scale."
+  },
+  {
+    "name": "Large",
+    "weight": 4,
+    "description": "High-mass world with stronger gravity and deeper potential atmosphere."
+  },
+  {
+    "name": "Huge",
+    "weight": 2,
+    "description": "Very massive world, often with extreme gravity and thick envelopes."
+  },
+  {
+    "name": "Massive",
+    "weight": 1,
+    "description": "Colossal planets, typically gas giants with immense gravitational pull."
+  }
+]

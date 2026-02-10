@@ -11,7 +11,7 @@ const clampInt = (value, min, max, fallback) => {
   return Math.min(max, Math.max(min, parsed));
 };
 
-function GeneratorPanel({ onGenerate, style, autoGenerateOnMount }) {
+function GeneratorPanel({ onGenerate, style, autoGenerateOnMount, initialSettings, onSettingsChange }) {
   const {
     pendingGridSize, setPendingGridSize,
     densityMode, setDensityMode,
@@ -21,7 +21,7 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount }) {
     seed, setSeed,
     autoGenerateSeed, setAutoGenerateSeed,
     generate
-  } = useSectorGenerator(onGenerate);
+  } = useSectorGenerator(onGenerate, initialSettings);
 
   const widthInputRef = useRef(null);
   const isAprilFools = new Date().getMonth() === 3 && new Date().getDate() === 1;
@@ -31,6 +31,31 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount }) {
     if (!autoGenerateOnMount) return;
     generate();
   }, [autoGenerateOnMount, generate]);
+
+  useEffect(() => {
+    if (!onSettingsChange) return;
+    onSettingsChange({
+      pendingGridSize,
+      densityMode,
+      densityPreset,
+      manualCount,
+      rangeLimits,
+      seed,
+      autoGenerateSeed
+    });
+  }, [
+    pendingGridSize,
+    densityMode,
+    densityPreset,
+    manualCount,
+    rangeLimits,
+    seed,
+    autoGenerateSeed,
+    onSettingsChange
+  ]);
+
+  const templateValue = `${pendingGridSize.width}x${pendingGridSize.height}`;
+  const hasTemplateMatch = SECTOR_TEMPLATES.some((template) => template.value === templateValue);
 
   return (
     <aside 
@@ -63,13 +88,15 @@ function GeneratorPanel({ onGenerate, style, autoGenerateOnMount }) {
             <label className="text-sm text-slate-300">Size Templates</label>
             <select
               className="w-full bg-slate-950 border border-slate-700 hover:border-slate-500 rounded-md px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
+              value={hasTemplateMatch ? templateValue : 'custom'}
               onChange={(e) => {
+                if (e.target.value === 'custom') return;
                 const [w, h] = e.target.value.split('x').map(Number);
                 setPendingGridSize({ width: w, height: h });
                 setTimeout(() => widthInputRef.current?.select(), 0);
               }}
-              defaultValue="8x10"
             >
+              <option value="custom">Custom</option>
               {SECTOR_TEMPLATES.map(template => (
                 <option key={template.value} value={template.value}>{template.label}</option>
               ))}

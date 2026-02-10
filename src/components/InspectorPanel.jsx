@@ -1,9 +1,11 @@
-import React, { memo, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Map as MapIcon, Star, Info, X, Disc, Activity, Circle, Hexagon, ChevronDown, ChevronRight } from 'lucide-react';
+import React, { memo, useState, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { Map as MapIcon, Star, Info, X, Disc, Satellite, Hexagon, ChevronDown, ChevronRight, Users, Stone } from 'lucide-react';
 import PlanetIcon from './PlanetIcon';
 import SystemStarIcon from './SystemStarIcon';
 import { getHexId } from '../utils/helpers';
+import planetSizesData from '../data/planet_sizes.json';
+import namesData from '../data/names.json';
 import { getStarVisual } from '../utils/starVisuals';
 import { getMainColor } from '../utils/colorSemantics';
 import { getPlanetByType } from '../utils/planetUtils';
@@ -40,6 +42,7 @@ function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onToo
             
             const tooltipData = {
               ...starInfo,
+              ...starInfo?.class,
               name: star.name,
               type: star.type,
               age: star.age,
@@ -59,7 +62,7 @@ function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onToo
               <div className="text-base font-bold text-blue-300">{star.name}</div>
               <div className="flex items-center gap-2">
                 <span
-                  className="text-[10px] font-bold uppercase cursor-help border-b border-dotted transition-colors"
+                  className="inline-block text-[10px] font-bold uppercase cursor-help border-b border-dotted transition-colors"
                   style={{ color: starAccentColor, borderColor: starAccentColor }}
                   onMouseEnter={(e) => onTooltipEnter(e, tooltipData)}
                   onMouseMove={onTooltipMove}
@@ -67,10 +70,10 @@ function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onToo
                 >
                   {star.type === 'Black Hole' ? 'Black Hole' :
                     star.type === 'Neutron' ? 'Neutron Star' :
-                      `Class ${star.type || 'Unknown'} Star`}
+                      `Class ${star.type || 'Unknown'} Star`} 
                 </span>
-                {star.age && (
-                  <span className="text-[10px] text-slate-500 font-bold uppercase">
+                &middot; {star.age && (
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">  
                     Age: {star.age} {star.ageUnit || 'Billion Years'}
                   </span>
                 )}
@@ -86,6 +89,23 @@ function StarSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onToo
 }
 
 function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
+  const sortedBodies = useMemo(() => {
+    if (!selectedSystem?.bodies?.length) {
+      return [];
+    }
+    return [...selectedSystem.bodies].sort((a, b) => {
+      const aIsPrimary = namesData.PRIMARY_PLANET_SUFFIXES.includes(a.name);
+      const bIsPrimary = namesData.PRIMARY_PLANET_SUFFIXES.includes(b.name);
+
+      if (aIsPrimary) return -1;
+      if (bIsPrimary) return 1;
+
+      if (a.isInhabited && !b.isInhabited) return -1;
+      if (!a.isInhabited && b.isInhabited) return 1;
+
+      return 0; // Keep original order for planets within the same group
+    });
+  }, [selectedSystem]);
   return (
     <div>
       <SectionToggleButton
@@ -99,7 +119,7 @@ function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, on
         <div className="px-1 pb-1 border-x border-b border-slate-800 rounded-b-lg bg-slate-900/30 animate-in fade-in slide-in-from-top-1 duration-200">
           {selectedSystem.bodies.length > 0 ? (
             <div className="space-y-2">
-              {selectedSystem.bodies.map((body, i) => {
+              {sortedBodies.map((body, i) => {
                 const planetData = getPlanetByType(body.type) || {};
                 const typeColor = getMainColor(planetData.color);
                 const planetTypeInfo = planetData.type || {};
@@ -109,6 +129,7 @@ function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, on
                   ...planetData,
                   name: `${selectedSystem.baseName || selectedSystem.name} ${body.name}`,
                   type: body.type,
+                  size: body.size,
                   planetTypeName: planetTypeInfo.name || body.type,
                   description: planetTypeInfo.description,
                   habitability: planetStats.habitable === 'true'
@@ -127,14 +148,40 @@ function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, on
                     <div className="flex items-center gap-3">
                       <PlanetIcon type={body.type} radius={12} className="shrink-0" />
                       <div>
-                        <div className="text-sm font-medium text-slate-300">{selectedSystem.baseName || selectedSystem.name} {body.name}</div>
-                        <div
-                          className="text-[10px] uppercase cursor-help transition-colors font-bold"
-                          style={{ color: typeColor || '#64748b' }}
-                          onMouseEnter={(e) => onTooltipEnter(e, tooltipData)}
-                          onMouseMove={onTooltipMove}
-                          onMouseLeave={onTooltipLeave}
-                        >{body.type}</div>
+                        <div className="text-sm font-medium text-slate-300 flex items-center gap-1.5">
+                          {body.isInhabited && <Users size={12} className="text-green-400 shrink-0" title="Inhabited" />}
+                          <span>
+                            {body.namingStyle === 'prefix'
+                              ? `${body.name} ${selectedSystem.baseName || selectedSystem.name}`
+                              : `${selectedSystem.baseName || selectedSystem.name} ${body.name}`
+                            }
+                          </span>
+                        </div>
+                        <div className="text-[10px] uppercase font-bold">
+                          <span
+                            className="inline-block cursor-help transition-colors border-b border-dotted"
+                            style={{ color: typeColor || '#64748b', borderColor: typeColor || '#64748b' }}
+                            onMouseEnter={(e) => onTooltipEnter(e, tooltipData)}
+                            onMouseMove={onTooltipMove}
+                            onMouseLeave={onTooltipLeave}
+                          >
+                            {body.type}
+                          </span>
+                          <span className="text-slate-400"> &middot; </span>
+                          <span
+                            className="inline-block text-slate-400 cursor-help transition-colors border-b border-dotted border-slate-400"
+                            onMouseEnter={(e) => {
+                              const sizeInfo = planetSizesData.find(s => s.name === body.size);
+                              onTooltipEnter(e, {
+                                name: body.size,
+                                description: sizeInfo?.description,
+                                isPlanetSize: true
+                              });
+                            }}
+                            onMouseMove={onTooltipMove}
+                            onMouseLeave={onTooltipLeave}
+                          >{body.size}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -152,24 +199,112 @@ function PlanetsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, on
   );
 }
 
-function InstallationsSection({ selectedSystem }) {
+function StationsSection({ expanded, onToggle, selectedSystem, onTooltipEnter, onTooltipMove, onTooltipLeave }) {
+  const stations = selectedSystem?.stations || [];
+  const stationCount = stations.length;
+
   return (
-    <div className="space-y-3">
-      <h3 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
-        <Activity size={12} /> Installations
-      </h3>
-      {selectedSystem.station ? (
-        <div className="bg-blue-950/20 border border-blue-900/50 p-2 rounded-lg flex items-center gap-3">
-          <div className="p-1.5 bg-blue-900/50 rounded text-blue-300">
-            <Circle size={14} />
-          </div>
-          <div>
-            <div className="text-sm font-bold text-blue-200">{selectedSystem.station}</div>
-            <div className="text-[10px] text-blue-400">Status: Nominal</div>
-          </div>
+    <div>
+      <SectionToggleButton
+        icon={<Satellite size={12} />}
+        label={`Stations (${stationCount})`}
+        isExpanded={expanded}
+        onToggle={onToggle}
+      />
+
+      {expanded && (
+        <div className="px-1 pb-1 border-x border-b border-slate-800 rounded-b-lg bg-slate-900/30 animate-in fade-in slide-in-from-top-1 duration-200">
+          {stationCount > 0 ? (
+            <div className="space-y-2">
+              {stations.map((station, i) => {
+                const tooltipData = {
+                  name: station.name,
+                  type: station.type,
+                  description: station.description,
+                  isStation: true
+                };
+                return (
+                  <div key={i} className="bg-slate-800/50 p-2 rounded border border-slate-700/50 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 bg-blue-900/50 rounded text-blue-300 shrink-0">
+                        <Satellite size={14} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-blue-200">{station.name}</div>
+                        <span
+                          className="inline-block text-[10px] text-blue-400 uppercase cursor-help border-b border-dotted border-blue-400/50"
+                          onMouseEnter={(e) => onTooltipEnter(e, tooltipData)}
+                          onMouseMove={onTooltipMove}
+                          onMouseLeave={onTooltipLeave}
+                        >{station.type}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500 italic text-center py-2">
+              No stations detected.
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="text-xs text-slate-600">No signals detected.</div>
+      )}
+    </div>
+  );
+}
+
+function BeltsAndFieldsSection({ expanded, onToggle, selectedSystem }) {
+  const belts = Array.isArray(selectedSystem?.belts) ? selectedSystem.belts : [];
+  const fields = Array.isArray(selectedSystem?.fields) ? selectedSystem.fields : [];
+  const itemCount = belts.length + fields.length;
+
+  return (
+    <div>
+      <SectionToggleButton
+        icon={<Stone size={12} />}
+        label={`Belts and Fields (${itemCount})`}
+        isExpanded={expanded}
+        onToggle={onToggle}
+      />
+
+      {expanded && (
+        <div className="px-1 pb-1 border-x border-b border-slate-800 rounded-b-lg bg-slate-900/30 animate-in fade-in slide-in-from-top-1 duration-200">
+          {itemCount > 0 ? (
+            <div className="space-y-2">
+              {belts.map((belt, i) => (
+                <div key={`belt-${i}`} className="bg-slate-800/50 p-2 rounded border border-slate-700/50 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 bg-slate-700 rounded text-slate-400 shrink-0">
+                      <Stone size={14} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-slate-300">{belt.name}</div>
+                      <div className="text-[10px] text-slate-400">{belt.type}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {fields.map((field, i) => (
+                <div key={`field-${i}`} className="bg-slate-800/50 p-2 rounded border border-slate-700/50 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 bg-slate-700 rounded text-slate-400 shrink-0">
+                      <Stone size={14} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-slate-300">{field.name || 'Unnamed Field'}</div>
+                      <div className="text-[10px] text-slate-400">{field.type || 'Field'}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500 italic text-center py-2">
+              No belts or fields detected.
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -187,9 +322,9 @@ function SelectionHeader({ selectedCoords, selectedSystem, onClear }) {
           </h2>
           <p className="text-blue-400 text-xs font-mono truncate mt-0.5">
             {selectedSystem?.globalLocation && (
-              <span>S:[{selectedSystem.globalLocation.sectorQ},{selectedSystem.globalLocation.sectorR}] - </span>
+              <span>S:[{selectedSystem.globalLocation.sectorQ}-{selectedSystem.globalLocation.sectorR}] &middot; </span>
             )}
-            C: [{String(selectedCoords.q).padStart(2, '0')},{String(selectedCoords.r).padStart(2, '0')}]
+            C:[{String(selectedCoords.q).padStart(2, '0')}-{String(selectedCoords.r).padStart(2, '0')}]
           </p>
         </div>
         <button
@@ -218,14 +353,20 @@ function Tooltip({ tooltip }) {
 
   // Use OR to be more permissive if data is partial
   const isStarTooltip = Boolean(info.isStar);
-  const isPlanetTooltip = Boolean(info.isPlanet);
+  const isPlanetTypeTooltip = Boolean(info.isPlanet); // Renamed to avoid conflict with planet size
+  const isPlanetSizeTooltip = Boolean(info.isPlanetSize);
+  const isStationTooltip = Boolean(info.isStation);
+
   const ageRange = (info.ageRange && typeof info.ageRange === 'object')
     ? `${info.ageRange.min || '?'} - ${info.ageRange.max || '?'} ${info.ageRange.unit || ''}`
     : null;
 
-  const tooltipTitle = isPlanetTooltip
-    ? String(info.type || info.planetTypeName || 'Unknown Body')
-    : String(info.name || info.type || 'Unknown Body');
+  // Determine tooltip title based on the type of information
+  const tooltipTitle = isStarTooltip ? String(info.name || info.type || 'Unknown Star') :
+                       isPlanetTypeTooltip ? String(info.type || info.planetTypeName || 'Unknown Body') :
+                       isPlanetSizeTooltip ? String(info.name || 'Unknown Size') :
+                       isStationTooltip ? String(info.name || 'Unknown Station') :
+                       String(info.name || info.type || 'Unknown Item');
 
   return createPortal(
     <div
@@ -245,20 +386,20 @@ function Tooltip({ tooltip }) {
             <div><span className="font-bold" style={{ color: accentColor }}>Temp:</span> {info.temp || 'Unknown'}</div>
             <div><span className="font-bold" style={{ color: accentColor }}>Mass:</span> {info.mass || 'Unknown'}</div>
             <div><span className="font-bold" style={{ color: accentColor }}>Typical Age:</span> {info.typicalAge || 'Unknown'}</div>
-            <div><span className="font-bold" style={{ color: accentColor }}>Age Range:</span> {ageRange || 'Unknown'}</div>
+            {ageRange && <div><span className="font-bold" style={{ color: accentColor }}>Age Range:</span> {ageRange}</div>}
           </>
         )}
-        {isPlanetTooltip && (
+        {(isPlanetTypeTooltip || isPlanetSizeTooltip || isStationTooltip) && (
           <>
             <div className="text-slate-300">
               {typeof info.description === 'string' ? info.description : 'No description available.'}
             </div>
+            {isPlanetTypeTooltip && info.habitability && (
+              <div className="text-slate-300 pt-2 border-t border-slate-700/50 mt-2">
+                <span className="font-bold" style={{ color: accentColor }}>Habitability:</span> {info.habitability} ({info.habitabilityRate})
+              </div>
+            )}
           </>
-        )}
-        {!isPlanetTooltip && (
-          <div className="text-slate-300 pt-2 border-t border-slate-700/50 mt-2">
-            {typeof info.description === 'string' ? info.description : 'No description available.'}
-          </div>
         )}
       </div>
     </div>,
@@ -268,7 +409,7 @@ function Tooltip({ tooltip }) {
 
 function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
-  const [expanded, setExpanded] = useState({ stars: true, planets: true });
+  const [expanded, setExpanded] = useState({ stars: true, planets: true, stations: true, beltsAndFields: true });
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, content: null });
 
   const handleTooltipEnter = (event, content) => {
@@ -299,7 +440,7 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
         <div className="flex items-center justify-between text-sm text-slate-400">
           <div className="flex items-center gap-2">
             <MapIcon size={16} />
-            <span>{gridSize.width} x {gridSize.height}</span>
+            <span>{gridSize.width} x {gridSize.height} ({gridSize.width * gridSize.height} Hexes)</span>
           </div>
           <div className="flex items-center gap-2">
             <Star size={16} />
@@ -343,7 +484,22 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords }
                   onTooltipLeave={handleTooltipLeave}
                 />
 
-                <InstallationsSection selectedSystem={selectedSystem} />
+                <StationsSection
+                  expanded={expanded.stations}
+                  onToggle={() => setExpanded((prev) => ({ ...prev, stations: !prev.stations }))}
+                  selectedSystem={selectedSystem}
+                  onTooltipEnter={handleTooltipEnter}
+                  onTooltipMove={handleTooltipMove}
+                  onTooltipLeave={handleTooltipLeave}
+                />
+
+
+
+                <BeltsAndFieldsSection
+                  expanded={expanded.beltsAndFields}
+                  onToggle={() => setExpanded((prev) => ({ ...prev, beltsAndFields: !prev.beltsAndFields }))}
+                  selectedSystem={selectedSystem}
+                />
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-60">

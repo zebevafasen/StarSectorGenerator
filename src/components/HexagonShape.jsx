@@ -40,12 +40,25 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
       />
       
       <text 
-        y={-HEX_SIZE/2} 
-        className="text-[8px] fill-slate-500 pointer-events-none select-none text-center" 
+        y={HEX_SIZE * 0.75} 
+        className="text-[7.5px] fill-slate-500 pointer-events-none select-none text-center" 
         textAnchor="middle"
       >
         {getHexId(q, r)}
       </text>
+
+      {hasSystem && systemData?.belts?.length > 0 && (
+        <circle
+          cx="0"
+          cy="0"
+          r={HEX_SIZE * 0.45}
+          fill="none"
+          stroke="#475569"
+          strokeWidth="1.5"
+          strokeDasharray="3 3"
+          className="pointer-events-none opacity-70"
+        />
+      )}
 
       {hasSystem && (() => {
         const stars = systemData?.stars || (systemData?.star ? [systemData.star] : []);
@@ -61,12 +74,12 @@ const HexagonShape = ({ q, r, hasSystem, isSelected, onClick, systemData }) => {
 
           if (stars.length === 2) {
             scale = 0.6;
-            const offset = HEX_SIZE * 0.25;
+            const offset = HEX_SIZE * 0.15;
             xOffset = index === 0 ? -offset : offset;
             yOffset = index === 0 ? -offset : offset;
           } else {
             scale = 0.5;
-            const offset = HEX_SIZE * 0.3;
+            const offset = HEX_SIZE * 0.2;
             if (index === 0) {
               yOffset = -offset;
             } else if (index === 1) {

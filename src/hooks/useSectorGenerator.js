@@ -9,6 +9,16 @@ const { DENSITY_PRESETS, GENERATION_WEIGHTS } = generatorConfig;
 const { GREEK_ALPHABET, ROMAN_NUMERALS, SYSTEM_NAME_SUFFIXES, NAME_PREFIXES, NAME_SUFFIXES, STAR_NAME_SUFFIXES } = namesData;
 const { MAX_PLANETS } = systemGenerationConfig;
 
+export const DEFAULT_GENERATOR_SETTINGS = {
+  pendingGridSize: { width: 8, height: 10 },
+  densityMode: 'preset',
+  densityPreset: 'normal',
+  manualCount: 15,
+  rangeLimits: { min: 5, max: 20 },
+  seed: '',
+  autoGenerateSeed: false
+};
+
 // Build a bell-like count distribution centered around 3 planets.
 const createPlanetCountWeights = (maxPlanets, center = 3) => {
   const sigma = 1.6;
@@ -86,14 +96,27 @@ const generateSystemSkeleton = (star, rng, maxPlanets) => {
   return system;
 };
 
-export function useSectorGenerator(onGenerate) {
-  const [pendingGridSize, setPendingGridSize] = useState({ width: 8, height: 10 });
-  const [densityMode, setDensityMode] = useState('preset');
-  const [densityPreset, setDensityPreset] = useState('normal');
-  const [manualCount, setManualCount] = useState(15);
-  const [rangeLimits, setRangeLimits] = useState({ min: 5, max: 20 });
-  const [seed, setSeed] = useState(() => Math.random().toString(36).substring(7).toUpperCase());
-  const [autoGenerateSeed, setAutoGenerateSeed] = useState(false);
+export function useSectorGenerator(onGenerate, initialSettings = {}) {
+  const initial = {
+    ...DEFAULT_GENERATOR_SETTINGS,
+    ...initialSettings,
+    pendingGridSize: {
+      ...DEFAULT_GENERATOR_SETTINGS.pendingGridSize,
+      ...(initialSettings.pendingGridSize || {})
+    },
+    rangeLimits: {
+      ...DEFAULT_GENERATOR_SETTINGS.rangeLimits,
+      ...(initialSettings.rangeLimits || {})
+    }
+  };
+
+  const [pendingGridSize, setPendingGridSize] = useState(initial.pendingGridSize);
+  const [densityMode, setDensityMode] = useState(initial.densityMode);
+  const [densityPreset, setDensityPreset] = useState(initial.densityPreset);
+  const [manualCount, setManualCount] = useState(initial.manualCount);
+  const [rangeLimits, setRangeLimits] = useState(initial.rangeLimits);
+  const [seed, setSeed] = useState(() => initial.seed || Math.random().toString(36).substring(7).toUpperCase());
+  const [autoGenerateSeed, setAutoGenerateSeed] = useState(Boolean(initial.autoGenerateSeed));
 
   const generateSector = useCallback((sectorQ, sectorR, config) => {
     const { 

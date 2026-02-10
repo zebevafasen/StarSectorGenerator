@@ -131,7 +131,7 @@
     },
     "data": {
       "freq": 0.06,
-      "size": { "inspector": 16, "iconSize": 64, "map": 0.4 },
+      "size": { "inspector": 16, "iconSize": 64, "map": 0.6 },
       "planetTypeWeights": { "Gas Giant": 0.0, "Terrestrial": 0.0, "Oceanic": 0.0, "Volcanic": 0.0, "Desert": 0.0, "Barren": 0.0, "Arctic": 0.0 }
     }
   },
@@ -148,7 +148,7 @@
     },
     "data": {
       "freq": 0.04,
-      "size": { "inspector": 16, "iconSize": 64, "map": 0.3 },
+      "size": { "inspector": 16, "iconSize": 64, "map": 1.0 },
       "planetTypeWeights": { "Gas Giant": 0.0, "Terrestrial": 0.00, "Oceanic": 0, "Volcanic": 0.0, "Desert": 0.0, "Barren": 0.0, "Arctic": 0.0 }
     }
   }
