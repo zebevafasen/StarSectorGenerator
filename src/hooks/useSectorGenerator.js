@@ -25,11 +25,10 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
   // Sync with initialSettings ONLY when they change from an external source (like Import)
   const [prevInitialSettings, setPrevInitialSettings] = useState(initialSettings);
 
-  if (initialSettings !== prevInitialSettings) {
+  if (initialSettings !== prevInitialSettings && initialSettings !== settings) {
     setSettings(prev => ({
       ...prev,
       ...initialSettings,
-      // Ensure nested objects are handled correctly if partial updates are passed (though usually full objects)
       pendingGridSize: initialSettings.pendingGridSize || prev.pendingGridSize,
       rangeLimits: initialSettings.rangeLimits || prev.rangeLimits
     }));
@@ -37,7 +36,11 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
   }
 
   const updateSettings = useCallback((updates) => {
-    setSettings(prev => ({ ...prev, ...updates }));
+    setSettings(prev => {
+      const hasChange = Object.entries(updates).some(([key, value]) => prev[key] !== value);
+      if (!hasChange) return prev;
+      return { ...prev, ...updates };
+    });
   }, []);
 
   const generate = useCallback(() => {
@@ -49,6 +52,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
 
     const newSystems = generateSector({
       ...settings,
+      gridSize: settings.pendingGridSize,
       seed: currentSeed,
       sectorQ: 0,
       sectorR: 0
