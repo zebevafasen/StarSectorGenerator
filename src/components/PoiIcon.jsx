@@ -31,25 +31,39 @@ const PoiIcon = ({ type, color, size = 16, inSvg = false }) => {
   const IconComponent = TYPE_ICONS[type] || HelpCircle;
   
   if (inSvg) {
+    const r = size * 0.4;
+    // Simple diamond path: Top -> Right -> Bottom -> Left -> Close
+    const diamondPath = `M 0 ${-r} L ${r} 0 L 0 ${r} L ${-r} 0 Z`;
+    
     return (
       <g className="poi-icon">
-        <circle
-          r={size * 0.7}
+        {/* Outer Glow */}
+        <path
+          d={diamondPath}
           fill={color}
-          opacity="0.2"
+          opacity="0.15"
+          transform="scale(1.6)"
+          style={{ filter: 'blur(1px)' }}
         />
-        <circle
-          r={size * 0.3}
+        
+        {/* Main Diamond Stroke */}
+        <path
+          d={diamondPath}
           fill="none"
           stroke={color}
-          strokeWidth="2"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
         />
-        <path 
-          d="M-2,-2 L2,2 M2,-2 L-2,2" 
-          stroke={color} 
-          strokeWidth="1.5" 
-          opacity="0.8"
+        
+        {/* Inner subtle fill */}
+        <path
+          d={diamondPath}
+          fill={color}
+          opacity="0.1"
         />
+
+        {/* Core Dot */}
+        <circle r="1" fill={color} />
       </g>
     );
   }
