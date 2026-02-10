@@ -80,7 +80,7 @@ export function PlanetsSection({
   onFocus
 }) {
   const systemName = selectedSystem?.baseName || selectedSystem?.name || 'Unknown';
-  const bodies = selectedSystem?.bodies || [];
+  const bodies = useMemo(() => selectedSystem?.bodies || [], [selectedSystem?.bodies]);
   const sortedBodies = useMemo(() => sortSystemBodies(bodies), [bodies]);
 
   return (

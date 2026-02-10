@@ -1,9 +1,7 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import HexagonShape from './HexagonShape';
-import { usePanZoom } from '../hooks/usePanZoom';
-import SidebarToggle from './starmap/SidebarToggle';
-import MapBackground from './starmap/MapBackground';
 import SectorNavigator from './starmap/SectorNavigator';
+import MapContainer from './starmap/MapContainer';
 
 export default function StarMap({
   gridSize,
@@ -12,30 +10,15 @@ export default function StarMap({
   setSelectedCoords,
   viewState,
   setViewState,
-  showLeftSidebar,
-  setShowLeftSidebar,
-  showRightSidebar,
-  setShowRightSidebar,
   sectorCoords,
   onNavigate
 }) {
-  const panZoomHandlers = usePanZoom(viewState, setViewState);
-  const dragStartRef = useRef({ x: 0, y: 0 });
-
-  const handleMouseDownCapture = (e) => {
-    dragStartRef.current = { x: e.clientX, y: e.clientY };
-  };
-
-  const handleMapClick = (e) => {
-    const dx = e.clientX - dragStartRef.current.x;
-    const dy = e.clientY - dragStartRef.current.y;
-    if (Math.sqrt(dx * dx + dy * dy) < 5) {
-      setSelectedCoords(null);
-    }
-  };
-
   const handleHexClick = useCallback((q, r) => {
     setSelectedCoords({ q, r });
+  }, [setSelectedCoords]);
+
+  const handleBackgroundClick = useCallback(() => {
+    setSelectedCoords(null);
   }, [setSelectedCoords]);
 
   const hexGrid = useMemo(() => {
@@ -55,38 +38,17 @@ export default function StarMap({
   }, [gridSize, systems, selectedCoords, handleHexClick]);
 
   return (
-    <div className="flex-1 relative bg-slate-950 overflow-hidden cursor-move">
-      <SidebarToggle 
-        side="left" 
-        isOpen={showLeftSidebar} 
-        onToggle={setShowLeftSidebar} 
+    <MapContainer 
+      viewState={viewState} 
+      setViewState={setViewState}
+      onBackgroundClick={handleBackgroundClick}
+    >
+      {hexGrid}
+      <SectorNavigator 
+        onNavigate={onNavigate} 
+        sectorCoords={sectorCoords} 
+        gridSize={gridSize}
       />
-      
-      <SidebarToggle 
-        side="right" 
-        isOpen={showRightSidebar} 
-        onToggle={setShowRightSidebar} 
-      />
-
-      <MapBackground viewState={viewState} />
-
-      <div
-        className="w-full h-full"
-        {...panZoomHandlers}
-        onMouseDownCapture={handleMouseDownCapture}
-        onClick={handleMapClick}
-      >
-        <svg width="100%" height="100%" id="star-map-svg">
-          <g transform={`translate(${viewState.x}, ${viewState.y}) scale(${viewState.scale})`}>
-            {hexGrid}
-            <SectorNavigator 
-              onNavigate={onNavigate} 
-              sectorCoords={sectorCoords} 
-              gridSize={gridSize}
-            />
-          </g>
-        </svg>
-      </div>
-    </div>
+    </MapContainer>
   );
 }

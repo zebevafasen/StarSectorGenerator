@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Globe, Map as MapIcon, Home } from 'lucide-react';
-import { HEX_SIZE, HEX_HEIGHT, SIDEBAR_WIDTH } from './constants';
+import { HEX_SIZE, HEX_HEIGHT } from './constants';
 import GeneratorPanel from './components/GeneratorPanel';
 import InspectorPanel from './components/InspectorPanel';
 import StarMap from './components/StarMap';
 import GalaxyMap from './components/GalaxyMap';
+import SidebarToggle from './components/starmap/SidebarToggle';
 import { postProcessSystems } from './generation/systemPostProcessing';
 import { useSession } from './hooks/useSession';
 
@@ -33,7 +34,6 @@ export default function App() {
   const handleJump = useCallback((direction) => {
     setSectorCoords(direction);
     setGeneratorSettings(prev => ({ ...prev, sectorCoords: direction }));
-    // Automatically switch back to local view on jump
     setViewMode('local');
   }, [setSectorCoords, setGeneratorSettings, setViewMode]);
 
@@ -63,7 +63,6 @@ export default function App() {
       setSelectedCoords(null);
       resetView(newGridSize);
 
-      // Reset archive only if starting a brand new universe (New Seed)
       if (isFresh) {
         setUniverse({
           [`${activeCoords.q},${activeCoords.r}`]: {
@@ -73,7 +72,6 @@ export default function App() {
           }
         });
       } else {
-        // Append to existing archive for navigation
         const sectorKey = `${activeCoords.q},${activeCoords.r}`;
         setUniverse(prev => ({
           ...prev,
@@ -85,7 +83,6 @@ export default function App() {
         }));
       }
 
-      // Sync sectorCoords in App if they differ (e.g. from a reset)
       if (activeCoords.q !== sectorCoords.q || activeCoords.r !== sectorCoords.r) {
         setSectorCoords(activeCoords);
       }
@@ -103,11 +100,9 @@ export default function App() {
     if (data.generatorSettings) {
       setGeneratorSettings(data.generatorSettings);
     }
-    // If importing a full universe, we should use that
     if (data.universe) {
       setUniverse(data.universe);
     } else {
-      // Just one sector
       const key = `${data.sectorCoords?.q || 0},${data.sectorCoords?.r || 0}`;
       setUniverse({ [key]: { systems: data.systems, gridSize: data.gridSize } });
     }
@@ -137,7 +132,7 @@ export default function App() {
 
   return (
     <div className="relative flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
-      {/* View Mode Toggle & Home */}
+      {/* HUD Overlays */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900 border border-slate-700 rounded-lg flex p-1 shadow-xl gap-1">
         <button
           onClick={() => handleJump({ q: 0, r: 0 })}
@@ -146,9 +141,7 @@ export default function App() {
         >
           <Home size={14} />
         </button>
-        
         <div className="w-px h-full bg-slate-800 mx-1" />
-
         <button
           onClick={() => setViewMode('local')}
           className={`px-3 py-1 text-xs font-bold rounded flex items-center gap-2 transition-all ${viewMode === 'local' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
@@ -163,6 +156,10 @@ export default function App() {
         </button>
       </div>
 
+      <SidebarToggle side="left" isOpen={showLeftSidebar} onToggle={setShowLeftSidebar} />
+      <SidebarToggle side="right" isOpen={showRightSidebar} onToggle={setShowRightSidebar} />
+
+      {/* Primary Map View */}
       {viewMode === 'local' ? (
         <StarMap
           gridSize={gridSize}
@@ -171,10 +168,6 @@ export default function App() {
           setSelectedCoords={handleCoordsChange}
           viewState={viewState}
           setViewState={setViewState}
-          showLeftSidebar={showLeftSidebar}
-          setShowLeftSidebar={setShowLeftSidebar}
-          showRightSidebar={showRightSidebar}
-          setShowRightSidebar={setShowRightSidebar}
           sectorCoords={sectorCoords}
           onNavigate={handleJump}
         />
@@ -186,6 +179,7 @@ export default function App() {
         />
       )}
 
+      {/* Panels */}
       <GeneratorPanel
         onGenerate={handleSectorGenerated}
         style={generatorStyle}
@@ -211,4 +205,3 @@ export default function App() {
     </div>
   );
 }
-
