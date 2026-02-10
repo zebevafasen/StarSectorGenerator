@@ -2,7 +2,7 @@ import generatorConfig from '../data/generator_config.json';
 import { createRNG, stringToSeed } from '../utils/rng';
 import { createWeightedStarPicker } from '../utils/starData';
 import { generateSystemAtCoordinate } from './systemGeneration';
-import { generatePOIAtCoordinate, getNetworkInboundGate, calculateGateDestination } from './poiGeneration';
+import { generatePOIAtCoordinate, getAllInboundGates, calculateGateDestination } from './poiGeneration';
 import { SYSTEM_GENERATION } from './generationConstants';
 
 const { DENSITY_PRESETS } = generatorConfig;
@@ -122,25 +122,27 @@ export const generateSector = ({
   const pickStar = createWeightedStarPicker();
   const systemsByCoord = {};
 
-  const systemCoords = coords.slice(0, targetCount);
-  const emptyCoords = coords.slice(targetCount);
-
-  // 1. Check for Stable Network Gates
-  // Use a dedicated network sub-seed for consistency across neighbors
+  // 1. Stable Network Gates (Guaranteed bi-directional links)
   const networkSeed = stringToSeed(`${seed}_net_${sectorQ}_${sectorR}`);
   const netRng = createRNG(networkSeed);
-  const hasOutboundGate = netRng() < 0.05; // 5% chance of an outbound link
-  const inboundOrigin = getNetworkInboundGate(seed, sectorQ, sectorR);
+  
+  const outboundLinks = [];
+  if (netRng() < 0.10) { // 10% chance of a dedicated outbound link
+    outboundLinks.push(calculateGateDestination(netRng, sectorQ, sectorR));
+  }
+  const inboundOrigins = getAllInboundGates(seed, sectorQ, sectorR);
 
-  // If we have an inbound link or an outbound link, we MUST have an active gate
-  if (hasOutboundGate || inboundOrigin) {
-    // Take a coordinate from systems or empty pool
-    const gateCoord = systemCoords.pop() || emptyCoords.pop();
+  // All targeted sectors must have an active gate
+  const activeLinks = [...outboundLinks, ...inboundOrigins];
+  
+  // Deterministically place network gates to ensure they don't shift
+  activeLinks.forEach((dest) => {
+    // We use the netRng to pick a coordinate from the available ones
+    // This makes the gate location stable for this sector/seed
+    const coordIndex = Math.floor(netRng() * coords.length);
+    const gateCoord = coords.splice(coordIndex, 1)[0];
+    
     if (gateCoord) {
-      const dest = hasOutboundGate 
-        ? calculateGateDestination(netRng, sectorQ, sectorR)
-        : inboundOrigin;
-
       systemsByCoord[`${gateCoord.q},${gateCoord.r}`] = {
         name: `Active Jump-Gate`,
         type: 'Jump-Gate',
@@ -154,12 +156,13 @@ export const generateSector = ({
         destination: dest
       };
     }
-  }
+  });
 
-  // 2. Generate standard systems
+  // 2. Map coordinates for remaining systems and POIs
+  const systemCoords = coords.slice(0, targetCount);
+  const emptyCoords = coords.slice(targetCount);
+
   systemCoords.forEach(({ q, r }) => {
-    if (systemsByCoord[`${q},${r}`]) return;
-    
     systemsByCoord[`${q},${r}`] = {
       ...generateSystemAtCoordinate({
         q,
@@ -174,10 +177,7 @@ export const generateSector = ({
     };
   });
 
-  // 3. Generate standard POIs
   emptyCoords.forEach(({ q, r }) => {
-    if (systemsByCoord[`${q},${r}`]) return;
-
     if (rng() < SYSTEM_GENERATION.POI_CHANCE) {
       systemsByCoord[`${q},${r}`] = generatePOIAtCoordinate(rng, q, r, sectorQ, sectorR, seed);
     }

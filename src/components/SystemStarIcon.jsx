@@ -15,8 +15,7 @@ const SystemStarIcon = ({
   const {
     colors,
     baseMapRadius,
-    baseInspectorRadius,
-    inspectorIconSize
+    baseInspectorRadius
   } = getStarVisual(starType);
 
   const fallbackUid = useId().replace(/:/g, '');

@@ -2,13 +2,13 @@ import poiData from '../data/poi.json';
 import poiTypes from '../data/poi_types.json';
 import { pickWeighted } from '../utils/weightedPicker';
 import { createRNG, stringToSeed } from '../utils/rng';
-import { SYSTEM_GENERATION } from './generationConstants';
 
 /**
  * Deterministically calculates where a gate at a specific sector leads.
  */
 export const calculateGateDestination = (rng, sq, sr) => {
-  const dist = Math.floor(rng() * 4) + 2;
+  // Use the provided rng to keep it deterministic
+  const dist = Math.floor(rng() * 4) + 2; // 2-5 sectors
   const angle = rng() * Math.PI * 2;
   const dq = Math.round(Math.cos(angle) * dist);
   const dr = Math.round(Math.sin(angle) * dist);
@@ -22,11 +22,11 @@ export const calculateGateDestination = (rng, sq, sr) => {
 
 /**
  * Scans neighbors to see if any point TO the current sector.
- * Returns the origin of the first found inbound gate.
+ * Returns an array of all inbound gate origins.
  */
-export const getNetworkInboundGate = (universeSeed, sq, sr) => {
-  // Scan range matches the jump distance (2-5)
+export const getAllInboundGates = (universeSeed, sq, sr) => {
   const scanRange = 6; 
+  const origins = [];
   
   for (let dq = -scanRange; dq <= scanRange; dq++) {
     for (let dr = -scanRange; dr <= scanRange; dr++) {
@@ -35,32 +35,22 @@ export const getNetworkInboundGate = (universeSeed, sq, sr) => {
       const nq = sq + dq;
       const nr = sr + dr;
       
-      // Simulate the RNG for this neighbor
-      const neighborSeed = stringToSeed(`${universeSeed}_${nq}_${nr}`);
-      const nRng = createRNG(neighborSeed);
-      
-      // Skip ahead to where POIs are usually generated in sectorGeneration
-      // This is a bit tight with sectorGeneration.js logic, but necessary for consistency.
-      // 1. Skip system target count roll
-      nRng(); 
-      // 2. Skip coordinate shuffle rolls (approximate or match exactly)
-      // Actually, a cleaner way: use a specific sub-seed for the "Sector Network Potential"
       const networkSeed = stringToSeed(`${universeSeed}_net_${nq}_${nr}`);
       const netRng = createRNG(networkSeed);
       
-      // If this neighbor has a gate and it leads to US
-      if (netRng() < 0.05) { // 5% chance of a sector having a network gate
+      // 10% chance per sector to have an outbound gate (Increased for better connectivity)
+      if (netRng() < 0.10) { 
         const dest = calculateGateDestination(netRng, nq, nr);
         if (dest.q === sq && dest.r === sr) {
-          return { q: nq, r: nr };
+          origins.push({ q: nq, r: nr });
         }
       }
     }
   }
-  return null;
+  return origins;
 };
 
-export const generatePOIAtCoordinate = (rng, q, r, sectorQ = 0, sectorR = 0, universeSeed = "") => {
+export const generatePOIAtCoordinate = (rng, q, r, sectorQ = 0, sectorR = 0) => {
   const pickedRaw = pickWeighted(poiData, p => p.weight, rng());
   const picked = { ...pickedRaw };
   const typeDef = poiTypes.find(t => t.name === picked.type) || {};
@@ -73,6 +63,7 @@ export const generatePOIAtCoordinate = (rng, q, r, sectorQ = 0, sectorR = 0, uni
     globalLocation: { sectorQ, sectorR }
   };
 
+  // Jump-Gate Logic
   if ((result.type === 'Jump-Gate' || result.type === 'Jump Gate') && result.state) {
     result.name = `${result.state} Jump-Gate`;
     const baseDescription = typeDef.description || result.description;
@@ -82,16 +73,10 @@ export const generatePOIAtCoordinate = (rng, q, r, sectorQ = 0, sectorR = 0, uni
     
     result.description = `${baseDescription} ${stateInfo}`;
 
-    if (result.state === 'Active') {
-      // Use the stable network RNG if available, or fallback
-      const networkSeed = stringToSeed(`${universeSeed}_net_${sectorQ}_${sectorR}`);
-      const netRng = createRNG(networkSeed);
-      
-      // Consume the presence roll
-      netRng(); 
-      
-      const dest = calculateGateDestination(netRng, sectorQ, sectorR);
-      result.destination = dest;
+    // Standard POI jump gates (not part of the stable network) point to random nearby sectors
+    if (result.state === 'Active' && !result.destination) {
+      const dist = Math.floor(rng() * 3) + 1;
+      result.destination = { q: sectorQ + dist, r: sectorR };
     }
   }
 
