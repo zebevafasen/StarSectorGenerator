@@ -10,15 +10,23 @@ import { pickWeighted } from '../utils/weightedPicker';
  * @returns {Object} POI object.
  */
 export const generatePOIAtCoordinate = (rng, q, r) => {
-  const picked = pickWeighted(poiData, p => p.weight, rng());
+  const pickedRaw = pickWeighted(poiData, p => p.weight, rng());
+  const picked = { ...pickedRaw };
   
   // Find the type definition for default color inheritance
   const typeDef = poiTypes.find(t => t.name === picked.type) || {};
-  
-  return {
+
+  const result = {
     ...picked,
     color: picked.color || typeDef.color || '#94a3b8',
     isPOI: true,
     location: { q, r }
   };
+
+  // Dynamic naming for Jump-Gates based on state
+  if ((result.type === 'Jump-Gate' || result.type === 'Jump Gate') && result.state) {
+    result.name = `${result.state} Jump-Gate`;
+  }
+
+  return result;
 };
