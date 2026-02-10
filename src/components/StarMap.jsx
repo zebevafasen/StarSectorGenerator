@@ -68,11 +68,6 @@ export default function StarMap({
         onToggle={setShowRightSidebar} 
       />
 
-      <SectorNavigator 
-        onNavigate={onNavigate} 
-        sectorCoords={sectorCoords} 
-      />
-
       <MapBackground viewState={viewState} />
 
       <div
@@ -84,6 +79,11 @@ export default function StarMap({
         <svg width="100%" height="100%" id="star-map-svg">
           <g transform={`translate(${viewState.x}, ${viewState.y}) scale(${viewState.scale})`}>
             {hexGrid}
+            <SectorNavigator 
+              onNavigate={onNavigate} 
+              sectorCoords={sectorCoords} 
+              gridSize={gridSize}
+            />
           </g>
         </svg>
       </div>

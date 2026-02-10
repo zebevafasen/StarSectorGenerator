@@ -1,9 +1,25 @@
 import React from 'react';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { HEX_SIZE, HEX_HEIGHT } from '../../constants';
 
-const NAV_BUTTON_CLASS = "absolute p-2 bg-slate-900/80 border border-slate-700 rounded-full text-slate-400 hover:text-blue-400 hover:border-blue-500/50 hover:bg-slate-800 transition-all shadow-xl z-10 group";
+// Angular "Tab" style for the buttons
+const TabPolygon = ({ points, onClick, children, title }) => (
+  <g 
+    onClick={(e) => { e.stopPropagation(); onClick(); }}
+    className="cursor-pointer group"
+  >
+    <title>{title}</title>
+    <polygon
+      points={points}
+      className="fill-slate-900/90 stroke-slate-700 stroke-1 transition-all group-hover:fill-blue-900/40 group-hover:stroke-blue-500 group-active:scale-95"
+    />
+    {children}
+  </g>
+);
 
-export default function SectorNavigator({ onNavigate, sectorCoords }) {
+export default function SectorNavigator({ onNavigate, sectorCoords, gridSize }) {
+  if (!gridSize) return null;
+
   const handleNav = (dq, dr) => {
     onNavigate({
       q: (sectorCoords?.q || 0) + dq,
@@ -11,51 +27,59 @@ export default function SectorNavigator({ onNavigate, sectorCoords }) {
     });
   };
 
+  const gridWidth = gridSize.width * 1.5 * HEX_SIZE;
+  const gridHeight = gridSize.height * HEX_HEIGHT;
+  
+  const midX = gridWidth / 2 + HEX_SIZE / 2;
+  const midY = gridHeight / 2;
+
+  const iconSize = 20;
+
   return (
-    <>
+    <g className="sector-navigator select-none">
       {/* North */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-        <button 
-          onClick={() => handleNav(0, -1)}
-          className={NAV_BUTTON_CLASS}
-          title="Move North"
-        >
-          <ChevronUp size={24} />
-        </button>
-      </div>
+      <TabPolygon 
+        title="Move North"
+        onClick={() => handleNav(0, -1)}
+        points={`${midX-30},0 ${midX+30},0 ${midX+20},25 ${midX-20},25`}
+      >
+        <g transform={`translate(${midX - iconSize/2}, 2)`}>
+          <ChevronUp size={iconSize} className="text-slate-500 group-hover:text-blue-400" />
+        </g>
+      </TabPolygon>
 
       {/* South */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-        <button 
-          onClick={() => handleNav(0, 1)}
-          className={NAV_BUTTON_CLASS}
-          title="Move South"
-        >
-          <ChevronDown size={24} />
-        </button>
-      </div>
+      <TabPolygon 
+        title="Move South"
+        onClick={() => handleNav(0, 1)}
+        points={`${midX-20},${gridHeight-5} ${midX+20},${gridHeight-5} ${midX+30},${gridHeight+20} ${midX-30},${gridHeight+20}`}
+      >
+        <g transform={`translate(${midX - iconSize/2}, ${gridHeight - 3})`}>
+          <ChevronDown size={iconSize} className="text-slate-500 group-hover:text-blue-400" />
+        </g>
+      </TabPolygon>
 
       {/* West */}
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
-        <button 
-          onClick={() => handleNav(-1, 0)}
-          className={NAV_BUTTON_CLASS}
-          title="Move West"
-        >
-          <ChevronLeft size={24} />
-        </button>
-      </div>
+      <TabPolygon 
+        title="Move West"
+        onClick={() => handleNav(-1, 0)}
+        points={`0,${midY-30} 25,${midY-20} 25,${midY+20} 0,${midY+30}`}
+      >
+        <g transform={`translate(2, ${midY - iconSize/2})`}>
+          <ChevronLeft size={iconSize} className="text-slate-500 group-hover:text-blue-400" />
+        </g>
+      </TabPolygon>
 
       {/* East */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
-        <button 
-          onClick={() => handleNav(1, 0)}
-          className={NAV_BUTTON_CLASS}
-          title="Move East"
-        >
-          <ChevronRight size={24} />
-        </button>
-      </div>
-    </>
+      <TabPolygon 
+        title="Move East"
+        onClick={() => handleNav(1, 0)}
+        points={`${gridWidth+10},${midY-20} ${gridWidth+35},${midY-30} ${gridWidth+35},${midY+30} ${gridWidth+10},${midY+20}`}
+      >
+        <g transform={`translate(${gridWidth + 12}, ${midY - iconSize/2})`}>
+          <ChevronRight size={iconSize} className="text-slate-500 group-hover:text-blue-400" />
+        </g>
+      </TabPolygon>
+    </g>
   );
 }
