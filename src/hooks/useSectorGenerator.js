@@ -48,7 +48,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       currentSeed = Math.random().toString(36).substring(7).toUpperCase();
     }
 
-    const newSystems = generateSector({
+    const { systems: newSystems, biome } = generateSector({
       ...settings,
       gridSize: settings.pendingGridSize,
       seed: currentSeed,
@@ -63,12 +63,12 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       sectorCoords: { q: 0, r: 0 }
     }));
 
-    onGenerate(newSystems, settings.pendingGridSize, { q: 0, r: 0 }, true);
+    onGenerate(newSystems, settings.pendingGridSize, { q: 0, r: 0 }, true, biome);
   }, [settings, onGenerate]);
 
   const regenerate = useCallback((targetCoords) => {
     const coords = targetCoords || settings.sectorCoords;
-    const newSystems = generateSector({
+    const { systems: newSystems, biome } = generateSector({
       ...settings,
       gridSize: settings.pendingGridSize,
       seed: settings.seed,
@@ -76,7 +76,7 @@ export function useSectorGenerator(onGenerate, initialSettings = {}) {
       sectorR: coords.r
     });
 
-    onGenerate(newSystems, settings.pendingGridSize, coords, false);
+    onGenerate(newSystems, settings.pendingGridSize, coords, false, biome);
   }, [settings, onGenerate]);
 
   return {

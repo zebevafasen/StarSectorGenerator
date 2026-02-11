@@ -6,7 +6,8 @@ import MapContainer from './starmap/MapContainer';
 export default function GalaxyMap({
   universe,
   initialSectorCoords,
-  onSectorSelect
+  onSectorSelect,
+  showPOIs = true
 }) {
   const [viewState, setViewState] = useState({ scale: 0.3, x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const [lastCenteredCoords, setLastCenteredCoords] = useState(null);
@@ -39,6 +40,7 @@ export default function GalaxyMap({
 
   // Find all active jump gate connections in the explored universe
   const jumpPaths = useMemo(() => {
+    if (!showPOIs) return [];
     const paths = [];
     exploredSectors.forEach(([key, sectorData]) => {
       const [sq, sr] = key.split(',').map(Number);
@@ -144,7 +146,7 @@ export default function GalaxyMap({
 
         {exploredSectors.map(([key, sectorData]) => {
           const [sq, sr] = key.split(',').map(Number);
-          const { systems, gridSize } = sectorData;
+          const { systems, gridSize, biome } = sectorData;
           const stride = {
             x: gridSize.width * 1.5 * HEX_SIZE,
             y: gridSize.height * HEX_HEIGHT
@@ -152,6 +154,7 @@ export default function GalaxyMap({
           
           const sectorOffsetX = sq * stride.x;
           const sectorOffsetY = sr * stride.y;
+          const biomeColor = biome?.colors?.primary || 'white';
 
           return (
             <g 
@@ -166,25 +169,26 @@ export default function GalaxyMap({
               <rect 
                 width={stride.x} 
                 height={stride.y} 
-                fill="#020617" 
-                fillOpacity="0.5"
-                stroke="white" 
+                fill={biome?.colors?.background || "#020617"} 
+                fillOpacity={biome ? 0.3 : 0.5}
+                stroke={biomeColor} 
                 strokeWidth="1" 
-                opacity="0.1" 
-                className="transition-all group-hover/sector:fill-blue-500/5 group-hover/sector:opacity-30 group-hover/sector:stroke-blue-400 group-hover/sector:stroke-[3px]"
+                opacity="0.2" 
+                className="transition-all group-hover/sector:fill-blue-500/5 group-hover/sector:opacity-60 group-hover/sector:stroke-blue-400 group-hover/sector:stroke-[3px]"
               />
 
               <path 
                 d={getSectorGridPath(gridSize)} 
                 fill="none" 
-                stroke="#1e293b" 
+                stroke={biomeColor} 
                 strokeWidth="0.5" 
-                opacity="0.4"
+                opacity="0.1"
                 className="pointer-events-none"
               />
               
               {Object.entries(systems).map(([coordKey, sys]) => {
                 if (!sys) return null;
+                if (!showPOIs && sys.isPOI) return null;
                 const [q, r] = coordKey.split(',').map(Number);
                 return (
                   <HexagonShape
@@ -202,10 +206,11 @@ export default function GalaxyMap({
               <text
                 x={stride.x / 2}
                 y={-10}
-                className="text-xs fill-slate-600 font-mono font-bold select-none pointer-events-none transition-colors group-hover/sector:fill-blue-400"
+                className="text-[10px] font-mono font-bold select-none pointer-events-none transition-colors group-hover/sector:fill-blue-400"
+                style={{ fill: biomeColor, opacity: 0.5 }}
                 textAnchor="middle"
               >
-                [{sq}, {sr}]
+                {biome?.name || `Sector [${sq}, ${sr}]`}
               </text>
             </g>
           );

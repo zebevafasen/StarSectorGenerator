@@ -6,7 +6,8 @@
   "DEFAULTS": {
     "GRID_SIZE": { "width": 8, "height": 10 },
     "MANUAL_COUNT": 15,
-    "RANGE": { "min": 5, "max": 20 }
+    "RANGE": { "min": 5, "max": 20 },
+    "REGION_SIZE": 10
   },
   "SECTOR_TEMPLATES": [
     { "value": "4x4", "label": "Scout Run (4x4)" },

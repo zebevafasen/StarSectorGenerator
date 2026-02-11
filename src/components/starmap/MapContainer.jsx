@@ -11,6 +11,7 @@ export default function MapContainer({
   children, 
   onBackgroundClick,
   onMouseDownCapture,
+  biome,
   className = "" 
 }) {
   const panZoomHandlers = usePanZoom(viewState, setViewState);
@@ -39,7 +40,7 @@ export default function MapContainer({
       onMouseDownCapture={handleMouseDownCapture}
       onClick={handleContainerClick}
     >
-      <MapBackground viewState={viewState} />
+      <MapBackground viewState={viewState} biome={biome} />
       
       <svg width="100%" height="100%" id="star-map-svg">
         <g transform={`translate(${viewState.x}, ${viewState.y}) scale(${viewState.scale})`}>

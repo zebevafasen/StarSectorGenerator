@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Map as MapIcon, Star, Info, Hexagon } from 'lucide-react';
+import { Map as MapIcon, Star, Info, Hexagon, Globe } from 'lucide-react';
 import { getHexId } from '../utils/helpers';
 import SelectionHeader from './inspector/SelectionHeader';
 import InspectorTooltip from './inspector/InspectorTooltip';
@@ -17,7 +17,7 @@ import {
   BeltsAndFieldsSection
 } from './inspector/InspectorSections';
 
-function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject, onJump, sectorCoords, style }) {
+function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, focusedObject, setFocusedObject, onJump, sectorCoords, style, biome }) {
   const selectedSystem = selectedCoords ? systems[`${selectedCoords.q},${selectedCoords.r}`] : null;
 
   // Handle POI selection automatically when a POI hex is clicked
@@ -45,16 +45,22 @@ function InspectorPanel({ gridSize, systems, selectedCoords, setSelectedCoords, 
     >
       <div className="p-4 border-b border-slate-800 bg-slate-900">
         <div className="flex items-center justify-between text-sm text-slate-400">
-          <div className="flex items-center gap-2">
-            <MapIcon size={16} />
-            <span>
-              Sector [{sectorCoords?.q ?? 0}, {sectorCoords?.r ?? 0}] 
-              <span className="text-slate-600 px-1">&middot;</span>
-              {gridSize?.width}x{gridSize?.height}
-            </span>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <MapIcon size={16} />
+              <span>
+                Sector [{sectorCoords?.q ?? 0}, {sectorCoords?.r ?? 0}] 
+              </span>
+            </div>
+            {biome && (
+              <div className="text-[10px] font-mono font-bold flex items-center gap-1 uppercase tracking-wider" style={{ color: biome.colors.primary }}>
+                <Globe size={10} />
+                {biome.name}
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Star size={16} />
+          <div className="flex items-center gap-2 text-xs">
+            <Star size={14} className="text-slate-500" />
             <span>{Object.keys(systems).length} Objects</span>
           </div>
         </div>

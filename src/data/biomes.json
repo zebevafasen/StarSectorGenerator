@@ -1,0 +1,88 @@
+{
+  "CORE": {
+    "id": "core",
+    "name": "The Galactic Core",
+    "description": "A densely packed region of ancient, stable star systems and bustling trade hubs.",
+    "weight": 1,
+    "densityMultiplier": 1.6,
+    "starWeights": {
+      "O": 0.5,
+      "B": 0.8,
+      "A": 1.0,
+      "F": 1.5,
+      "G": 2.0,
+      "K": 1.5,
+      "M": 1.0,
+      "Black Hole": 0.1,
+      "Neutron": 0.1
+    },
+    "colors": {
+      "primary": "#fbbf24",
+      "secondary": "#f59e0b",
+      "background": "rgba(251, 191, 36, 0.03)",
+      "nebula": "rgba(245, 158, 11, 0.05)"
+    }
+  },
+  "VOID": {
+    "id": "void",
+    "name": "The Outer Void",
+    "description": "A cold, desolate reach where stars are few and far between. Ancient derelicts drift in the dark.",
+    "weight": 2,
+    "densityMultiplier": 0.4,
+    "starWeights": {
+      "O": 0.1,
+      "B": 0.2,
+      "A": 0.5,
+      "F": 0.8,
+      "G": 1.0,
+      "K": 1.5,
+      "M": 2.5,
+      "Black Hole": 0.5,
+      "Neutron": 0.5
+    },
+    "colors": {
+      "primary": "#6366f1",
+      "secondary": "#4338ca",
+      "background": "rgba(2, 6, 23, 0.8)",
+      "nebula": "rgba(99, 102, 241, 0.02)"
+    }
+  },
+  "MAELSTROM": {
+    "id": "maelstrom",
+    "name": "The Maelstrom",
+    "description": "A chaotic region of thick nebulae, intense radiation, and dangerous stellar phenomena.",
+    "weight": 1,
+    "densityMultiplier": 1.0,
+    "starWeights": {
+      "O": 2.5,
+      "B": 2.0,
+      "A": 1.5,
+      "F": 0.8,
+      "G": 0.5,
+      "K": 0.5,
+      "M": 0.5,
+      "Black Hole": 2.0,
+      "Neutron": 2.5
+    },
+    "colors": {
+      "primary": "#ec4899",
+      "secondary": "#be185d",
+      "background": "rgba(236, 72, 153, 0.04)",
+      "nebula": "rgba(190, 24, 93, 0.1)"
+    }
+  },
+  "FRONTIER": {
+    "id": "frontier",
+    "name": "The Frontier",
+    "description": "A balanced region of space with diverse systems and standard navigation conditions.",
+    "weight": 5,
+    "densityMultiplier": 1.0,
+    "starWeights": null,
+    "colors": {
+      "primary": "#3b82f6",
+      "secondary": "#1d4ed8",
+      "background": "rgba(15, 23, 42, 0.02)",
+      "nebula": "rgba(59, 130, 246, 0.03)"
+    }
+  }
+}

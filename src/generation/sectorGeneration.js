@@ -5,6 +5,7 @@ import { createWeightedStarPicker } from '../utils/starData';
 import { generateSystemAtCoordinate } from './systemGeneration';
 import { generatePOIAtCoordinate, getJumpGateLink } from './poiGeneration';
 import { SYSTEM_GENERATION } from './generationConstants';
+import { getBiomeForSector } from '../utils/biomeUtils';
 
 const { DENSITY_PRESETS } = generatorConfig;
 const { CORE_SYSTEM_SETTINGS } = systemConfig;
@@ -125,7 +126,10 @@ const getClusteredCoordinatesForCore = (width, height, rng, coreHex) => {
 
   weightedCoords.sort((a, b) => (rng() * b.weight) - (rng() * a.weight));
 
-  return weightedCoords.map(item => item.coord);
+  return {
+    coords: weightedCoords.map(item => item.coord),
+    centers
+  };
 };
 
 export const generateSector = ({
@@ -143,18 +147,30 @@ export const generateSector = ({
   const numericSeed = stringToSeed(sectorSeedString);
   const rng = createRNG(numericSeed);
 
+  const biome = getBiomeForSector(sectorQ, sectorR, seed);
+
   const totalHexes = gridSize.width * gridSize.height;
-  const targetCount = calculateTargetCount(densityMode, densityPreset, manualCount, rangeLimits, totalHexes, rng, distributionMode);
+  let targetCount = calculateTargetCount(densityMode, densityPreset, manualCount, rangeLimits, totalHexes, rng, distributionMode);
+
+  // Apply biome density multiplier
+  targetCount = Math.round(targetCount * (biome.densityMultiplier || 1.0));
 
   // Phase One: Calculate Core Hex
   const coreHex = calculateIdealCoreHex(sectorQ, sectorR, gridSize.width, gridSize.height, seed);
 
   // Phase Two: Use Core-based clustering if enabled
-  const coords = distributionMode === 'clustered' 
-    ? getClusteredCoordinatesForCore(gridSize.width, gridSize.height, rng, coreHex)
-    : getShuffledCoordinates(gridSize.width, gridSize.height, rng);
+  let coords;
+  let clusterCenters = [];
 
-  const pickStar = createWeightedStarPicker();
+  if (distributionMode === 'clustered') {
+    const result = getClusteredCoordinatesForCore(gridSize.width, gridSize.height, rng, coreHex);
+    coords = result.coords;
+    clusterCenters = result.centers;
+  } else {
+    coords = getShuffledCoordinates(gridSize.width, gridSize.height, rng);
+  }
+
+  const pickStar = createWeightedStarPicker(biome.starWeights);
 
   // Phase Three: Filtered picker for Core Systems (No Black Holes/Neutrons)
   const pickCoreStar = (r) => {
@@ -237,10 +253,52 @@ export const generateSector = ({
   emptyCoords.forEach(({ q, r }) => {
     if (systemsByCoord[`${q},${r}`]) return;
 
-    if (rng() < SYSTEM_GENERATION.POI_CHANCE) {
+    let spawnChance = SYSTEM_GENERATION.POI_CHANCE * 0.3; // Base reduced chance
+
+    // If in clustered mode, check distance from the cluster centers
+    if (distributionMode === 'clustered') {
+      const distances = clusterCenters.map(center => {
+        const dq = q - center.q;
+        const dr = r - center.r;
+        return Math.sqrt(dq * dq + dr * dr);
+      });
+
+      const minDist = Math.min(...distances);
+
+      // 1. Hard-avoid being right on top of systems
+      if (minDist < 2.2) return;
+
+      // 2. "Between Clusters" Logic
+      let betweenBias = 1.0;
+      
+      if (clusterCenters.length > 1) {
+        // Find the two closest centers
+        const sortedDistances = [...distances].sort((a, b) => a - b);
+        const d1 = sortedDistances[0];
+        const d2 = sortedDistances[1];
+
+        // If the hex is roughly between two centers, boost the chance.
+        const diff = Math.abs(d1 - d2);
+        if (diff < 3 && d1 > 3 && d1 < 8) {
+          betweenBias = 4.0; // Significant boost for being in the "lane" between clusters
+        }
+      } else {
+        // Only one cluster? Just favor the "outskirts"
+        if (minDist >= 4 && minDist <= 7) {
+          betweenBias = 2.0;
+        }
+      }
+
+      spawnChance = (SYSTEM_GENERATION.POI_CHANCE * 0.3) * betweenBias;
+    }
+
+    if (rng() < spawnChance) {
       systemsByCoord[`${q},${r}`] = generatePOIAtCoordinate(rng, q, r, sectorQ, sectorR);
     }
   });
 
-  return systemsByCoord;
+  return {
+    systems: systemsByCoord,
+    biome
+  };
 };

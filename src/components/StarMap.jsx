@@ -11,7 +11,8 @@ export default function StarMap({
   viewState,
   setViewState,
   sectorCoords,
-  onNavigate
+  onNavigate,
+  biome
 }) {
   const handleHexClick = useCallback((q, r) => {
     setSelectedCoords({ q, r });
@@ -42,6 +43,7 @@ export default function StarMap({
       viewState={viewState} 
       setViewState={setViewState}
       onBackgroundClick={handleBackgroundClick}
+      biome={biome}
     >
       {hexGrid}
       <SectorNavigator 
